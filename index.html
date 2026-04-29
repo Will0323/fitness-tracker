@@ -2939,6 +2939,8 @@
 
         // データのエクスポート（ダウンロード）
         function exportData() {
+            console.log('exportData呼び出し');
+            
             const allData = {
                 userProfile: JSON.parse(localStorage.getItem(STORAGE_KEYS.USER_PROFILE)),
                 weightRecords: JSON.parse(localStorage.getItem(STORAGE_KEYS.WEIGHT_RECORDS)),
@@ -2948,6 +2950,8 @@
                 theme: localStorage.getItem(STORAGE_KEYS.THEME),
                 exportDate: new Date().toISOString()
             };
+
+            console.log('エクスポートデータ:', allData);
 
             const dataStr = JSON.stringify(allData, null, 2);
             const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -2959,6 +2963,8 @@
             const fileName = `fitness_backup_${new Date().toISOString().slice(0, 10)}.json`;
             link.download = fileName;
             
+            console.log('ダウンロード開始:', fileName);
+            
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -2969,13 +2975,22 @@
 
         // データのインポート（復元）
         function importData(event) {
+            console.log('importData呼び出し');
+            
             const file = event.target.files[0];
-            if (!file) return;
+            if (!file) {
+                console.log('ファイルが選択されていません');
+                return;
+            }
+
+            console.log('選択されたファイル:', file.name);
 
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
+                    console.log('ファイル読み込み完了');
                     const data = JSON.parse(e.target.result);
+                    console.log('インポートデータ:', data);
                     
                     // データの妥当性チェック
                     if (!data.userProfile) {
@@ -3007,18 +3022,26 @@
 
         // すべてのデータをリセット
         function resetAllData() {
+            console.log('resetAllData呼び出し');
+            
             if (!confirm('⚠️ 本当にすべてのデータを削除しますか？\n\nこの操作は取り消せません。')) {
+                console.log('削除キャンセル（1回目）');
                 return;
             }
 
             if (!confirm('⚠️⚠️ 最終確認です！\n\n本当に削除しますか？\nバックアップは取りましたか？')) {
+                console.log('削除キャンセル（2回目）');
                 return;
             }
+
+            console.log('データ削除開始');
 
             // すべてのデータを削除
             Object.values(STORAGE_KEYS).forEach(key => {
                 localStorage.removeItem(key);
             });
+
+            console.log('データ削除完了');
 
             alert('✅ すべてのデータを削除しました\n\nページを再読み込みします。');
             location.reload();
@@ -4051,6 +4074,7 @@
         window.saveGoalWeight = saveGoalWeight;
         window.showTemplateManager = showTemplateManager;
         window.exportData = exportData;
+        window.importData = importData;
         window.resetAllData = resetAllData;
         window.selectPetType = selectPetType;
         window.confirmPetSelection = confirmPetSelection;
