@@ -3897,8 +3897,18 @@
         }
 
         function useTemplate(index) {
+            console.log('useTemplate呼び出し:', index);
+            
             const templates = JSON.parse(localStorage.getItem(STORAGE_KEYS.MEAL_TEMPLATES)) || [];
+            console.log('テンプレート一覧:', templates);
+            
             const template = templates[index];
+            console.log('選択されたテンプレート:', template);
+            
+            if (!template) {
+                alert('テンプレートが見つかりません');
+                return;
+            }
             
             const overlay = document.createElement('div');
             overlay.style.cssText = `
@@ -3990,7 +4000,8 @@
                     localStorage.setItem(STORAGE_KEYS.CALORIE_RECORDS, JSON.stringify(calorieRecords));
                     
                     displayCalorieRecords();
-                    updatePetWithMeal();
+                    updatePFCChart(); // PFCグラフを更新
+                    updatePetWithMeal(); // ペットを更新
                     
                     overlay.remove();
                     alert(`✅ ${template.name} を記録しました！`);
@@ -4038,6 +4049,15 @@
         window.useTemplate = useTemplate;
         window.deleteCalorieRecord = deleteCalorieRecord;
         window.saveGoalWeight = saveGoalWeight;
+        window.showTemplateManager = showTemplateManager;
+        window.exportData = exportData;
+        window.resetAllData = resetAllData;
+        window.selectPetType = selectPetType;
+        window.confirmPetSelection = confirmPetSelection;
+        window.editTemplate = editTemplate;
+        window.deleteTemplate = deleteTemplate;
+        window.closeTemplateManager = closeTemplateManager;
+        window.showAddTemplateForm = showAddTemplateForm;
 
         // DOMの読み込み完了を待ってからアプリを起動
         if (document.readyState === 'loading') {
