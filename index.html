@@ -3819,6 +3819,7 @@
 
         function saveTemplate(event) {
             event.preventDefault();
+            console.log('saveTemplate呼び出し');
             
             const template = {
                 name: document.getElementById('templateName').value,
@@ -3829,9 +3830,13 @@
                 carbs: parseFloat(document.getElementById('templateCarbs').value) || 0
             };
             
+            console.log('保存するテンプレート:', template);
+            
             const templates = JSON.parse(localStorage.getItem(STORAGE_KEYS.MEAL_TEMPLATES)) || [];
             templates.push(template);
             localStorage.setItem(STORAGE_KEYS.MEAL_TEMPLATES, JSON.stringify(templates));
+            
+            console.log('保存完了。全テンプレート:', templates);
             
             showTemplateManager();
         }
@@ -4082,6 +4087,8 @@
         window.deleteTemplate = deleteTemplate;
         window.closeTemplateManager = closeTemplateManager;
         window.showAddTemplateForm = showAddTemplateForm;
+        window.saveTemplate = saveTemplate;
+        window.updateTemplate = updateTemplate;
 
         // DOMの読み込み完了を待ってからアプリを起動
         if (document.readyState === 'loading') {
