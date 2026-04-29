@@ -1,0 +1,4057 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#667eea">
+    <meta name="description" content="体重・食事・歩数を記録して、可愛いペットと一緒に健康管理">
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoi44OV44Kj44OD44OI44ON44K55oGo6YyY6KiYIiwic2hvcnRfbmFtZSI6IuODleOCo+ODg+ODiOODjeOCueiomOmMsiIsInN0YXJ0X3VybCI6Ii4vIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI2ZmZmZmZiIsInRoZW1lX2NvbG9yIjoiIzY2N2VlYSIsImljb25zIjpbeyJzcmMiOiJkYXRhOmltYWdlL3N2Zyt4bWwsJTNDc3ZnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zycgdmlld0JveD0nMCAwIDEwMCAxMDAnJTNFJTNDcmVjdCBmaWxsPSclMjM2NjdlZWEnIHdpZHRoPScxMDAnIGhlaWdodD0nMTAwJyByeD0nMjAnLyUzRSUzQ3RleHQgeD0nNTAlMjUnIHk9JzUwJTI1JyBmb250LXNpemU9JzUwJyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyUzRSVGMCU5RiU5MiVBQSUzQy90ZXh0JTNFJTNDL3N2ZyUzRSIsInNpemVzIjoiNTEyeDUxMiIsInR5cGUiOiJpbWFnZS9zdmcreG1sIn1dfQ==">
+    <title>フィットネス・ダイエット記録アプリ</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #f093fb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .theme-selector {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+
+        .theme-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid white;
+            cursor: pointer;
+            margin-left: 5px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .theme-btn:hover {
+            transform: scale(1.2) rotate(5deg);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .theme-btn:active {
+            transform: scale(1.1) rotate(0deg);
+        }
+
+        .theme-purple { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .theme-blue { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+        .theme-green { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+        .theme-orange { background: linear-gradient(135deg, #fa709a, #fee140); }
+        .theme-pink { background: linear-gradient(135deg, #f093fb, #f5576c); }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 15px;
+            min-height: 52px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.1);
+            transform: translateY(-2px);
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+        }
+
+        .radio-option {
+            flex: 1;
+            position: relative;
+        }
+
+        .radio-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .radio-option label {
+            display: block;
+            padding: 16px 12px;
+            min-height: 54px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 16px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .radio-option label:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .radio-option input[type="radio"]:checked + label {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            transform: scale(1.05);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 18px 15px;
+            min-height: 54px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .stats-carousel {
+            position: relative;
+            overflow: hidden;
+            margin: 20px 0;
+            padding: 0 10px;
+        }
+
+        .stats-carousel-container {
+            display: flex;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            gap: 15px;
+        }
+
+        .stats-carousel-item {
+            min-width: calc(100% - 20px);
+            flex-shrink: 0;
+        }
+
+        .carousel-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .carousel-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ddd;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .carousel-dot.active {
+            background: var(--primary-color);
+            width: 24px;
+            border-radius: 4px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.1) 0%, rgba(var(--secondary-rgb), 0.1) 100%);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card:active {
+            transform: translateY(-2px);
+        }
+
+        .stat-card h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .stat-card .unit {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border-radius: 2px;
+        }
+
+        .record-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .record-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeInUp 0.4s ease-out;
+        }
+
+        .record-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+
+        .content {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .record-item .date {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .record-item .values {
+            text-align: right;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px 8px;
+            min-height: 52px;
+            background: #f8f9fa;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            opacity: 0;
+            transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 0;
+        }
+
+        .tab span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .tab.active::before {
+            opacity: 1;
+        }
+
+        .tab.active {
+            color: white;
+        }
+
+        .tab:hover:not(.active) {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .user-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .user-info p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .user-info strong {
+            color: #333;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .pfc-inputs {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .pfc-inputs input {
+            text-align: center;
+        }
+
+        .pfc-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .chart-wrapper {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .feature-toggle {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .feature-toggle:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .toggle-label input[type="checkbox"] {
+            display: none;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            background: #ccc;
+            border-radius: 13px;
+            transition: background 0.3s;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch::before {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: white;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-label input[type="checkbox"]:checked + .toggle-switch {
+            background: var(--primary-color);
+        }
+
+        .toggle-label input[type="checkbox"]:checked + .toggle-switch::before {
+            left: 26px;
+        }
+
+        .toggle-text {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .tab.hidden-feature {
+            display: none;
+        }
+
+        .pet-container {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            z-index: 100;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            display: none; /* Hide fixed pet */
+        }
+
+        .pet-avatar {
+            position: relative;
+            cursor: pointer;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));
+            animation: petFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes petFloat {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .pet-avatar:hover {
+            animation: petBounce 0.6s ease-in-out;
+        }
+
+        @keyframes petBounce {
+            0%, 100% {
+                transform: translateY(0) scale(1);
+            }
+            25% {
+                transform: translateY(-15px) scale(1.05);
+            }
+            50% {
+                transform: translateY(-5px) scale(1.02);
+            }
+            75% {
+                transform: translateY(-10px) scale(1.03);
+            }
+        }
+
+        .pet-message {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 8px 12px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
+            white-space: nowrap;
+            font-size: 12px;
+            color: #333;
+            opacity: 0;
+            transform: translateX(-50%) translateY(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+
+        .pet-message::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid white;
+        }
+
+        .pet-message.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .pet-stats {
+            display: none; /* Hide stats bubble */
+        }
+
+        .user-info-pet {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            min-height: 90px;
+        }
+
+        .user-info-text {
+            flex: 1;
+        }
+
+        .user-info-text p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .user-info-text strong {
+            color: #333;
+        }
+
+        .pet-in-info {
+            flex-shrink: 0;
+            position: relative;
+            width: 100px;
+            height: 80px;
+            overflow: visible;
+        }
+
+        .pet-in-info .pet-avatar {
+            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.15));
+            position: absolute;
+            left: 0;
+            animation: petOccasionalWalk 30s ease-in-out infinite;
+        }
+
+        @keyframes petOccasionalWalk {
+            0%, 92% {
+                left: 0;
+            }
+            94%, 98% {
+                left: 20px;
+            }
+            100% {
+                left: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                max-width: 100%;
+                border-radius: 0;
+                min-height: 100vh;
+            }
+
+            body {
+                padding: 0;
+            }
+
+            .header {
+                border-radius: 0;
+            }
+
+            .stats-carousel {
+                padding: 0 5px;
+            }
+
+            .content {
+                padding: 20px 15px;
+            }
+
+            .tabs {
+                gap: 5px;
+            }
+
+            .tab {
+                font-size: 12px;
+                padding: 10px 5px;
+            }
+
+            .theme-selector {
+                top: 10px;
+                right: 10px;
+            }
+
+            .theme-btn {
+                width: 25px;
+                height: 25px;
+                margin-left: 3px;
+            }
+
+            .user-info-pet {
+                flex-direction: row;
+                align-items: center;
+            }
+
+            .user-info-text p {
+                font-size: 13px;
+            }
+        }
+
+        /* トグルスイッチのスタイル */
+        .toggle-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .toggle-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .toggle-item:hover {
+            background: #e9ecef;
+        }
+
+        .toggle-label {
+            flex: 1;
+        }
+
+        .toggle-label span {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 28px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        .switch input:checked + .slider {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        }
+
+        .switch input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="theme-selector">
+                <button class="theme-btn theme-purple" onclick="changeTheme('purple')" title="パープル"></button>
+                <button class="theme-btn theme-blue" onclick="changeTheme('blue')" title="ブルー"></button>
+                <button class="theme-btn theme-green" onclick="changeTheme('green')" title="グリーン"></button>
+                <button class="theme-btn theme-orange" onclick="changeTheme('orange')" title="オレンジ"></button>
+                <button class="theme-btn theme-pink" onclick="changeTheme('pink')" title="ピンク"></button>
+            </div>
+            <h1>フィットネス記録</h1>
+            <p>あなたの健康管理をサポート</p>
+        </div>
+
+        <!-- 初回登録画面 -->
+        <div id="setupScreen" class="content">
+            <h2 class="section-title">プロフィール登録</h2>
+            <form id="setupForm">
+                <div class="form-group">
+                    <label for="userName">あなたの名前</label>
+                    <input type="text" id="userName" required placeholder="例: 太郎">
+                </div>
+
+                <div class="form-group">
+                    <label for="age">年齢</label>
+                    <input type="number" id="age" required min="1" max="120" placeholder="例: 25">
+                </div>
+
+                <div class="form-group">
+                    <label>性別</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="male" name="gender" value="male" required>
+                            <label for="male">男性</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="female" name="gender" value="female" required>
+                            <label for="female">女性</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="height">身長 (cm)</label>
+                    <input type="number" id="height" required min="100" max="250" step="0.1" placeholder="例: 170.5">
+                </div>
+
+                <div class="form-group">
+                    <label for="initialWeight">現在の体重 (kg)</label>
+                    <input type="number" id="initialWeight" required min="20" max="300" step="0.1" placeholder="例: 65.5">
+                </div>
+
+                <div class="form-group">
+                    <label>ペットを選択</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="petDog" name="pet" value="dog" required>
+                            <label for="petDog">🐶 犬</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="petCat" name="pet" value="cat" required>
+                            <label for="petCat">🐱 猫</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="petName">ペットの名前</label>
+                    <input type="text" id="petName" required placeholder="例: ポチ / たま">
+                </div>
+
+                <button type="submit" class="btn">登録して開始</button>
+            </form>
+        </div>
+
+        <!-- メイン画面 -->
+        <div id="mainScreen" class="content hidden">
+            <div class="user-info-pet">
+                <div class="user-info-text">
+                    <p><strong><span id="displayUserName"></span>さん</strong> | <span id="displayAge"></span>歳 | <span id="displayGender"></span></p>
+                    <p><strong>身長:</strong> <span id="displayHeight"></span>cm</p>
+                </div>
+                <div class="pet-in-info">
+                    <div class="pet-message" id="petMessageInInfo"></div>
+                    <div class="pet-avatar" id="petAvatarInInfo" onclick="petInteraction()"></div>
+                </div>
+            </div>
+
+            <div class="stats-carousel">
+                <div class="stats-carousel-container" id="statsCarouselContainer">
+                    <div class="stats-carousel-item">
+                        <div class="stat-card">
+                            <h3>BMI</h3>
+                            <div class="value" id="bmiValue">--</div>
+                            <div class="unit" id="bmiCategory"></div>
+                        </div>
+                    </div>
+                    <div class="stats-carousel-item">
+                        <div class="stat-card">
+                            <h3>体脂肪率(推定)</h3>
+                            <div class="value" id="bodyFatValue">--</div>
+                            <div class="unit">%</div>
+                        </div>
+                    </div>
+                    <div class="stats-carousel-item">
+                        <div class="stat-card">
+                            <h3>基礎代謝</h3>
+                            <div class="value" id="bmrValue">--</div>
+                            <div class="unit">kcal/日</div>
+                        </div>
+                    </div>
+                    <div class="stats-carousel-item">
+                        <div class="stat-card">
+                            <h3>今日の歩数</h3>
+                            <div class="value" id="todaySteps">0</div>
+                            <div class="unit">歩</div>
+                        </div>
+                    </div>
+                    <div class="stats-carousel-item">
+                        <div class="stat-card">
+                            <h3>歩数消費</h3>
+                            <div class="value" id="burnedCalories">0</div>
+                            <div class="unit">kcal</div>
+                        </div>
+                    </div>
+                    <div class="stats-carousel-item">
+                        <div class="stat-card">
+                            <h3>総消費カロリー</h3>
+                            <div class="value" id="totalBurnedCalories">--</div>
+                            <div class="unit">kcal/日</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="carousel-dots" id="carouselDots"></div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" data-feature="weight" onclick="switchTab('weight')"><span>体重</span></button>
+                <button class="tab" data-feature="steps" onclick="switchTab('steps')"><span>歩数</span></button>
+                <button class="tab" data-feature="calorie" onclick="switchTab('calorie')"><span>食事</span></button>
+                <button class="tab" data-feature="graphs" onclick="switchTab('graphs')"><span>グラフ</span></button>
+                <button class="tab" onclick="switchTab('settings')"><span>設定</span></button>
+            </div>
+
+            <!-- 体重記録タブ -->
+            <div id="weightTab">
+                <div class="section">
+                    <h2 class="section-title">今日の体重を記録</h2>
+                    <form id="weightForm">
+                        <div class="input-row">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <input type="number" id="weight" required min="20" max="300" step="0.1" placeholder="体重 (kg)">
+                            </div>
+                            <button type="submit" class="btn" style="width: auto; padding: 12px 30px;">記録</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">体重履歴</h2>
+                    <div class="record-list" id="weightRecords"></div>
+                </div>
+            </div>
+
+            <!-- 歩数記録タブ -->
+            <div id="stepsTab" class="hidden">
+                <div class="section">
+                    <h2 class="section-title">今日の歩数を記録</h2>
+                    <form id="stepsForm">
+                        <div class="input-row">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <input type="number" id="steps" required min="0" max="100000" placeholder="歩数">
+                            </div>
+                            <button type="submit" class="btn" style="width: auto; padding: 12px 30px;">記録</button>
+                        </div>
+                    </form>
+                    <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+                        <p style="font-size: 14px; color: #666; margin-bottom: 5px;">💡 消費カロリーの計算式</p>
+                        <p style="font-size: 12px; color: #999;">歩数 × 体重(kg) × 0.04 ÷ 100 = 消費カロリー(kcal)</p>
+                        <p style="font-size: 11px; color: #aaa; margin-top: 5px;">例：8000歩 × 60kg × 0.04 ÷ 100 = 192kcal</p>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">歩数履歴</h2>
+                    <div class="record-list" id="stepsRecords"></div>
+                </div>
+            </div>
+
+            <!-- 食事記録タブ -->
+            <div id="calorieTab" class="hidden">
+                <div class="section">
+                    <h2 class="section-title">メニューテンプレート</h2>
+                    <button onclick="showTemplateManager()" class="btn" style="margin-bottom: 15px; background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%);">
+                        📝 テンプレート管理
+                    </button>
+                    <div id="quickTemplates" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px;">
+                        <!-- テンプレートボタンがここに表示 -->
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">今日の食事を記録</h2>
+                    <form id="calorieForm">
+                        <div class="form-group">
+                            <input type="text" id="mealName" required placeholder="食事名 (例: 朝食)">
+                        </div>
+                        <div class="form-group">
+                            <label>PFCバランス (g)</label>
+                            <div class="pfc-inputs">
+                                <div>
+                                    <div class="pfc-label">タンパク質 (P)</div>
+                                    <input type="number" id="protein" min="0" step="0.1" placeholder="0">
+                                </div>
+                                <div>
+                                    <div class="pfc-label">脂質 (F)</div>
+                                    <input type="number" id="fat" min="0" step="0.1" placeholder="0">
+                                </div>
+                                <div>
+                                    <div class="pfc-label">炭水化物 (C)</div>
+                                    <input type="number" id="carbs" min="0" step="0.1" placeholder="0">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="input-row">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <input type="number" id="calories" required min="0" max="10000" placeholder="カロリー (kcal)">
+                            </div>
+                            <button type="submit" class="btn" style="width: auto; padding: 12px 30px;">記録</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">今日の合計</h2>
+                    <div class="stat-card">
+                        <div class="value" id="totalCalories">0</div>
+                        <div class="unit">kcal</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">食事履歴</h2>
+                    <div class="record-list" id="calorieRecords"></div>
+                </div>
+            </div>
+
+            <!-- グラフタブ -->
+            <div id="graphsTab" class="hidden">
+                <div id="graphsCarousel" style="overflow: hidden; position: relative;">
+                    <div id="graphsContainer" style="display: flex; transition: transform 0.3s ease;">
+                        <!-- 体重グラフ -->
+                        <div class="graph-slide" id="weightGraphSlide" style="min-width: 100%; flex-shrink: 0;">
+                            <div class="section">
+                                <h2 class="section-title">体重・BMI・体脂肪率の推移</h2>
+                                <div class="chart-wrapper">
+                                    <div class="chart-container">
+                                        <canvas id="weightChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- カロリーグラフ -->
+                        <div class="graph-slide" id="calorieGraphSlide" style="min-width: 100%; flex-shrink: 0;">
+                            <div class="section">
+                                <h2 class="section-title">日々のカロリー収支</h2>
+                                <div class="chart-wrapper">
+                                    <div class="chart-container">
+                                        <canvas id="calorieChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 予測グラフ -->
+                        <div class="graph-slide" id="predictionGraphSlide" style="min-width: 100%; flex-shrink: 0;">
+                            <div class="section">
+                                <h2 class="section-title">体重予測グラフ</h2>
+                                <div class="chart-wrapper">
+                                    <div class="chart-container">
+                                        <canvas id="predictionChart"></canvas>
+                                    </div>
+                                </div>
+                                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-top: 15px;">
+                                    <p style="font-size: 14px; color: #666; margin: 0 0 10px 0;">📊 2週間後の予想</p>
+                                    <p style="font-size: 20px; font-weight: 700; color: #667eea; margin: 0;">
+                                        <span id="twoWeekPrediction">--</span> kg
+                                    </p>
+                                    <p style="font-size: 12px; color: #999; margin: 8px 0 0 0;">
+                                        現在のペースを維持した場合
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PFCグラフ -->
+                        <div class="graph-slide" id="pfcGraphSlide" style="min-width: 100%; flex-shrink: 0;">
+                            <div class="section">
+                                <h2 class="section-title">今日のPFCバランス</h2>
+                                <div class="chart-wrapper">
+                                    <div class="chart-container" style="height: 250px;">
+                                        <canvas id="pfcChart"></canvas>
+                                    </div>
+                                </div>
+                                <div class="stats-grid">
+                                    <div class="stat-card">
+                                        <h3>タンパク質(P)</h3>
+                                        <div class="value" id="totalProtein">0</div>
+                                        <div class="unit">g</div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <h3>脂質(F)</h3>
+                                        <div class="value" id="totalFat">0</div>
+                                        <div class="unit">g</div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <h3>炭水化物(C)</h3>
+                                        <div class="value" id="totalCarbs">0</div>
+                                        <div class="unit">g</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- グラフナビゲーションドット -->
+                <div id="graphDots" style="display: flex; justify-content: center; gap: 8px; padding: 20px 0; margin-top: -10px;">
+                    <!-- ドットがJavaScriptで生成される -->
+                </div>
+            </div>
+
+            <!-- 設定タブ -->
+            <div id="settingsTab" class="hidden">
+                <div class="section">
+                    <h2 class="section-title">📱 スマホで使う方法</h2>
+                    <div style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                        <p style="font-weight: 600; margin-bottom: 12px; color: #333; font-size: 15px;">ホーム画面に追加すると、アプリのように使えます！</p>
+                        
+                        <div style="background: white; padding: 15px; border-radius: 10px; margin-bottom: 12px;">
+                            <p style="font-weight: 600; color: #667eea; margin-bottom: 8px;">📱 iPhone (Safari)</p>
+                            <ol style="margin: 0; padding-left: 20px; color: #666; font-size: 14px; line-height: 1.8;">
+                                <li>下の共有ボタン <span style="font-size: 18px;">□↑</span> をタップ</li>
+                                <li>「ホーム画面に追加」を選択</li>
+                                <li>名前を入力して「追加」</li>
+                            </ol>
+                        </div>
+
+                        <div style="background: white; padding: 15px; border-radius: 10px;">
+                            <p style="font-weight: 600; color: #667eea; margin-bottom: 8px;">📱 Android (Chrome)</p>
+                            <ol style="margin: 0; padding-left: 20px; color: #666; font-size: 14px; line-height: 1.8;">
+                                <li>右上のメニュー <span style="font-size: 18px;">⋮</span> をタップ</li>
+                                <li>「ホーム画面に追加」を選択</li>
+                                <li>「追加」をタップ</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">機能の表示設定</h2>
+                    <p style="color: #666; margin-bottom: 20px; font-size: 14px;">
+                        使わない機能を非表示にできます。
+                    </p>
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                        <div class="feature-toggle">
+                            <label class="toggle-label">
+                                <input type="checkbox" id="toggleWeight" checked onchange="toggleFeature('weight')">
+                                <span class="toggle-switch"></span>
+                                <span class="toggle-text">体重記録</span>
+                            </label>
+                        </div>
+                        <div class="feature-toggle">
+                            <label class="toggle-label">
+                                <input type="checkbox" id="toggleSteps" checked onchange="toggleFeature('steps')">
+                                <span class="toggle-switch"></span>
+                                <span class="toggle-text">歩数記録</span>
+                            </label>
+                        </div>
+                        <div class="feature-toggle">
+                            <label class="toggle-label">
+                                <input type="checkbox" id="toggleCalorie" checked onchange="toggleFeature('calorie')">
+                                <span class="toggle-switch"></span>
+                                <span class="toggle-text">食事記録</span>
+                            </label>
+                        </div>
+                        <div class="feature-toggle">
+                            <label class="toggle-label">
+                                <input type="checkbox" id="toggleGraphs" checked onchange="toggleFeature('graphs')">
+                                <span class="toggle-switch"></span>
+                                <span class="toggle-text">グラフ</span>
+                            </label>
+                        </div>
+                        <div class="feature-toggle">
+                            <label class="toggle-label">
+                                <input type="checkbox" id="toggleGoal" checked onchange="toggleFeature('goal')">
+                                <span class="toggle-switch"></span>
+                                <span class="toggle-text">目標体重</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">グラフの表示設定</h2>
+                    <p style="color: #666; margin-bottom: 20px; font-size: 14px;">
+                        表示したいグラフを選択できます。
+                    </p>
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+                        <div class="feature-toggle">
+                            <label class="toggle-label">
+                                <input type="checkbox" id="toggleWeightGraph" checked onchange="toggleGraph('weightGraph')">
+                                <span class="toggle-switch"></span>
+                                <span class="toggle-text">体重・BMI・体脂肪率</span>
+                            </label>
+                        </div>
+                        <div class="feature-toggle">
+                            <label class="toggle-label">
+                                <input type="checkbox" id="toggleCalorieGraph" checked onchange="toggleGraph('calorieGraph')">
+                                <span class="toggle-switch"></span>
+                                <span class="toggle-text">カロリー収支</span>
+                            </label>
+                        </div>
+                        <div class="feature-toggle">
+                            <label class="toggle-label">
+                                <input type="checkbox" id="togglePredictionGraph" checked onchange="toggleGraph('predictionGraph')">
+                                <span class="toggle-switch"></span>
+                                <span class="toggle-text">体重予測</span>
+                            </label>
+                        </div>
+                        <div class="feature-toggle">
+                            <label class="toggle-label">
+                                <input type="checkbox" id="togglePFCGraph" checked onchange="toggleGraph('pfcGraph')">
+                                <span class="toggle-switch"></span>
+                                <span class="toggle-text">PFCバランス</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section" id="goalWeightSection">
+                    <h2 class="section-title">目標体重設定</h2>
+                    <p style="color: #666; margin-bottom: 20px; font-size: 14px;">
+                        目標体重を設定して、達成に必要なカロリー摂取量を計算します。
+                    </p>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">目標体重 (kg)</label>
+                            <input type="number" id="goalWeightInput" step="0.1" min="1" placeholder="目標体重を入力" style="width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 18px; text-align: center;" oninput="saveGoalWeight()" onchange="saveGoalWeight()">
+                        </div>
+                        
+                        <div id="goalCalculations" style="display: none;">
+                            <div style="background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                                <p style="font-size: 14px; color: #666; margin: 0 0 10px 0;">📊 現在の状況</p>
+                                <p style="font-size: 16px; font-weight: 600; color: #333; margin: 0;">
+                                    現在: <span id="currentWeight">--</span>kg → 目標: <span id="displayGoalWeight">--</span>kg
+                                </p>
+                                <p style="font-size: 14px; color: #667eea; margin: 8px 0 0 0;">
+                                    残り: <span id="weightDifference">--</span>kg
+                                </p>
+                            </div>
+                            
+                            <div style="background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                                <p style="font-size: 14px; color: #666; margin: 0 0 10px 0;">🍽️ 推奨カロリー摂取量</p>
+                                <p style="font-size: 24px; font-weight: 700; color: #2ECC71; margin: 0;">
+                                    <span id="recommendedCalories">--</span> kcal/日
+                                </p>
+                                <p id="calorieExplanation" style="font-size: 12px; color: #999; margin: 8px 0 0 0;">
+                                    計算中...
+                                </p>
+                            </div>
+                            
+                            <div style="background: white; padding: 15px; border-radius: 10px;">
+                                <p style="font-size: 14px; color: #666; margin: 0 0 10px 0;">📅 目標達成予測</p>
+                                <p style="font-size: 18px; font-weight: 600; color: #667eea; margin: 0;">
+                                    約 <span id="daysToGoal">--</span> 日後に達成
+                                </p>
+                                <p style="font-size: 13px; color: #999; margin: 8px 0 0 0;">
+                                    予想日: <span id="goalDate">--</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">データのバックアップ</h2>
+                    <p style="color: #666; margin-bottom: 20px; font-size: 14px;">
+                        データをファイルに保存して、ブラウザのデータを消しても復元できるようにします。
+                    </p>
+                    <button onclick="exportData()" class="btn" style="margin-bottom: 15px;">
+                        📥 データをダウンロード
+                    </button>
+                    <p style="color: #999; font-size: 12px;">
+                        すべての記録（体重、食事、歩数、ペット情報）がJSONファイルとしてダウンロードされます。
+                    </p>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">データの復元</h2>
+                    <p style="color: #666; margin-bottom: 20px; font-size: 14px;">
+                        保存したバックアップファイルから、データを復元します。
+                    </p>
+                    <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+                    <button onclick="document.getElementById('importFile').click()" class="btn" style="margin-bottom: 15px; background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%);">
+                        📤 データを復元
+                    </button>
+                    <p style="color: #999; font-size: 12px;">
+                        以前ダウンロードしたバックアップファイルを選択してください。
+                    </p>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">自動バックアップ</h2>
+                    <p style="color: #666; margin-bottom: 20px; font-size: 14px;">
+                        データは以下の場所にも保存されています：
+                    </p>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
+                        <p style="font-size: 13px; color: #333; margin-bottom: 10px;">
+                            <strong>💡 おすすめの保存方法：</strong>
+                        </p>
+                        <ul style="font-size: 13px; color: #666; margin-left: 20px;">
+                            <li>定期的に「データをダウンロード」でバックアップ</li>
+                            <li>バックアップファイルをGoogleドライブやiCloudに保存</li>
+                            <li>スマホ機種変更の前に必ずバックアップ</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">データのリセット</h2>
+                    <p style="color: #666; margin-bottom: 20px; font-size: 14px;">
+                        すべてのデータを削除して、最初からやり直します。
+                    </p>
+                    <button onclick="resetAllData()" class="btn" style="background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%);">
+                        🗑️ すべてのデータを削除
+                    </button>
+                </div>
+            </div>
+
+            <!-- ペットアバター -->
+            <div class="pet-container" id="petContainer">
+                <div class="pet-message" id="petMessage"></div>
+                <div class="pet-stats" id="petStats"></div>
+                <div class="pet-avatar" id="petAvatar" onclick="petInteraction()"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        'use strict';
+        
+        (function() {
+            // グローバルエラーハンドラー
+            window.addEventListener('error', function(e) {
+                console.error('エラーが発生しました:', e.error);
+                console.error('エラー詳細:', {
+                    message: e.message,
+                    filename: e.filename,
+                    lineno: e.lineno,
+                    colno: e.colno,
+                    error: e.error
+                });
+            });
+
+            window.addEventListener('unhandledrejection', function(e) {
+                console.error('未処理のPromiseエラー:', e.reason);
+            });
+
+            // ローカルストレージのキー
+            const STORAGE_KEYS = {
+                USER_PROFILE: 'fitnessApp_userProfile',
+                WEIGHT_RECORDS: 'fitnessApp_weightRecords',
+                CALORIE_RECORDS: 'fitnessApp_calorieRecords',
+                STEPS_RECORDS: 'fitnessApp_stepsRecords',
+                THEME: 'fitnessApp_theme',
+                PET_DATA: 'fitnessApp_petData',
+                FEATURE_TOGGLES: 'fitnessApp_featureToggles',
+                MEAL_TEMPLATES: 'fitnessApp_mealTemplates',
+                GOAL_WEIGHT: 'fitnessApp_goalWeight'
+            };
+
+        // アプリの初期化
+        function initApp() {
+            try {
+                // テーマを読み込み
+                const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME) || 'purple';
+                applyTheme(savedTheme);
+
+                const userProfile = JSON.parse(localStorage.getItem(STORAGE_KEYS.USER_PROFILE));
+                const petData = JSON.parse(localStorage.getItem(STORAGE_KEYS.PET_DATA));
+                
+                if (userProfile) {
+                    // 既存ユーザーでペットデータがない場合、ペット選択画面を表示
+                    if (!petData) {
+                        showPetSelectionScreen();
+                    } else {
+                        showMainScreen(userProfile);
+                        setTimeout(() => {
+                            initCarousel();
+                        }, 100);
+                    }
+                } else {
+                    document.getElementById('setupScreen').classList.remove('hidden');
+                    document.getElementById('mainScreen').classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('アプリ初期化エラー:', error);
+                alert('アプリの初期化中にエラーが発生しました。ページをリロードしてください。\n\nエラー: ' + error.message);
+            }
+        }
+
+        // ペット選択画面を表示（既存ユーザー用）
+        function showPetSelectionScreen() {
+            const overlay = document.createElement('div');
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+                animation: fadeIn 0.3s ease-out;
+            `;
+
+            overlay.innerHTML = `
+                <div style="
+                    background: white;
+                    padding: 40px;
+                    border-radius: 20px;
+                    max-width: 400px;
+                    text-align: center;
+                    animation: fadeInUp 0.5s ease-out;
+                ">
+                    <h2 style="margin-bottom: 20px; color: #333;">🐾 ペットを選んでください</h2>
+                    <p style="color: #666; margin-bottom: 30px;">あなたの健康管理を一緒に頑張る相棒を選びましょう！</p>
+                    <div style="display: flex; gap: 20px; justify-content: center; margin-bottom: 20px;">
+                        <button onclick="selectPetType('dog')" id="selectDog" style="
+                            padding: 30px 40px;
+                            font-size: 48px;
+                            border: 3px solid #ddd;
+                            border-radius: 15px;
+                            background: white;
+                            cursor: pointer;
+                            transition: all 0.3s;
+                        " onmouseover="this.style.transform='scale(1.1)'; this.style.borderColor='var(--primary-color)'" 
+                           onmouseout="this.style.transform='scale(1)'; this.style.borderColor='#ddd'">
+                            🐶
+                        </button>
+                        <button onclick="selectPetType('cat')" id="selectCat" style="
+                            padding: 30px 40px;
+                            font-size: 48px;
+                            border: 3px solid #ddd;
+                            border-radius: 15px;
+                            background: white;
+                            cursor: pointer;
+                            transition: all 0.3s;
+                        " onmouseover="this.style.transform='scale(1.1)'; this.style.borderColor='var(--primary-color)'" 
+                           onmouseout="this.style.transform='scale(1)'; this.style.borderColor='#ddd'">
+                            🐱
+                        </button>
+                    </div>
+                    <div id="petNameInputContainer" style="display: none; margin-top: 20px;">
+                        <input type="text" id="petNameInput" placeholder="ペットの名前を入力" style="
+                            width: 100%;
+                            padding: 12px 15px;
+                            border: 2px solid #e0e0e0;
+                            border-radius: 10px;
+                            font-size: 16px;
+                            margin-bottom: 15px;
+                            box-sizing: border-box;
+                        ">
+                        <button onclick="confirmPetSelection()" style="
+                            width: 100%;
+                            padding: 15px;
+                            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+                            color: white;
+                            border: none;
+                            border-radius: 10px;
+                            font-size: 16px;
+                            font-weight: 600;
+                            cursor: pointer;
+                        ">決定</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(overlay);
+        }
+
+        let selectedPetType = null;
+
+        // ペットタイプを選択
+        function selectPetType(petType) {
+            selectedPetType = petType;
+            document.getElementById('petNameInputContainer').style.display = 'block';
+            document.getElementById('selectDog').style.opacity = petType === 'dog' ? '1' : '0.3';
+            document.getElementById('selectCat').style.opacity = petType === 'cat' ? '1' : '0.3';
+        }
+
+        // ペット選択を確定
+        function confirmPetSelection() {
+            const petName = document.getElementById('petNameInput').value.trim();
+            if (!petName) {
+                alert('ペットの名前を入力してください');
+                return;
+            }
+            if (!selectedPetType) {
+                alert('ペットを選択してください');
+                return;
+            }
+
+            const randomBreed = Math.floor(Math.random() * 15); // 0-14のランダムな品種
+
+            const petData = {
+                type: selectedPetType,
+                breed: randomBreed,
+                name: petName,
+                size: 1,
+                health: 'normal',
+                lastFed: new Date().toISOString(),
+                totalMealsLogged: 0
+            };
+            localStorage.setItem(STORAGE_KEYS.PET_DATA, JSON.stringify(petData));
+
+            // オーバーレイを削除
+            const overlay = document.querySelector('div[style*="position: fixed"]');
+            if (overlay) {
+                overlay.style.animation = 'fadeOut 0.3s ease-out';
+                setTimeout(() => {
+                    overlay.remove();
+                    const userProfile = JSON.parse(localStorage.getItem(STORAGE_KEYS.USER_PROFILE));
+                    showMainScreen(userProfile);
+                    setTimeout(() => {
+                        initCarousel();
+                    }, 100);
+                }, 300);
+            }
+        }
+
+        // カルーセルの初期化
+        let currentSlide = 0;
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const totalSlides = 6;
+
+        function initCarousel() {
+            const container = document.getElementById('statsCarouselContainer');
+            const dotsContainer = document.getElementById('carouselDots');
+
+            // ドットを生成
+            for (let i = 0; i < totalSlides; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'carousel-dot';
+                if (i === 0) dot.classList.add('active');
+                dot.addEventListener('click', () => goToSlide(i));
+                dotsContainer.appendChild(dot);
+            }
+
+            // スワイプイベント
+            container.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            });
+
+            container.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            });
+
+            // マウスドラッグイベント
+            let mouseDown = false;
+            let startX = 0;
+
+            container.addEventListener('mousedown', (e) => {
+                mouseDown = true;
+                startX = e.pageX;
+                container.style.cursor = 'grabbing';
+            });
+
+            container.addEventListener('mousemove', (e) => {
+                if (!mouseDown) return;
+                e.preventDefault();
+            });
+
+            container.addEventListener('mouseup', (e) => {
+                if (!mouseDown) return;
+                mouseDown = false;
+                container.style.cursor = 'grab';
+                const endX = e.pageX;
+                const diff = startX - endX;
+                
+                if (Math.abs(diff) > 50) {
+                    if (diff > 0 && currentSlide < totalSlides - 1) {
+                        goToSlide(currentSlide + 1);
+                    } else if (diff < 0 && currentSlide > 0) {
+                        goToSlide(currentSlide - 1);
+                    }
+                }
+            });
+
+            container.addEventListener('mouseleave', () => {
+                mouseDown = false;
+                container.style.cursor = 'grab';
+            });
+
+            container.style.cursor = 'grab';
+        }
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0 && currentSlide < totalSlides - 1) {
+                    // 左スワイプ - 次へ
+                    goToSlide(currentSlide + 1);
+                } else if (diff < 0 && currentSlide > 0) {
+                    // 右スワイプ - 前へ
+                    goToSlide(currentSlide - 1);
+                }
+            }
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            const container = document.getElementById('statsCarouselContainer');
+            const offset = -index * 100;
+            container.style.transform = `translateX(${offset}%)`;
+
+            // ドットの更新
+            const dots = document.querySelectorAll('.carousel-dot');
+            dots.forEach((dot, i) => {
+                if (i === index) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+        }
+
+        // テーマを変更
+        function changeTheme(theme) {
+            localStorage.setItem(STORAGE_KEYS.THEME, theme);
+            applyTheme(theme);
+            
+            // グラフを更新（色を変更するため）
+            if (!document.getElementById('graphsTab').classList.contains('hidden')) {
+                updateWeightChart();
+                updateCalorieChart();
+                updatePFCChart();
+            }
+        }
+
+        // テーマを適用
+        function applyTheme(theme) {
+            const themes = {
+                purple: { primary: '#667eea', secondary: '#764ba2', accent: '#f093fb', primaryRgb: '102, 126, 234', secondaryRgb: '118, 75, 162' },
+                blue: { primary: '#4facfe', secondary: '#00f2fe', accent: '#43e97b', primaryRgb: '79, 172, 254', secondaryRgb: '0, 242, 254' },
+                green: { primary: '#43e97b', secondary: '#38f9d7', accent: '#4facfe', primaryRgb: '67, 233, 123', secondaryRgb: '56, 249, 215' },
+                orange: { primary: '#fa709a', secondary: '#fee140', accent: '#f093fb', primaryRgb: '250, 112, 154', secondaryRgb: '254, 225, 64' },
+                pink: { primary: '#f093fb', secondary: '#f5576c', accent: '#fa709a', primaryRgb: '240, 147, 251', secondaryRgb: '245, 87, 108' }
+            };
+
+            const selectedTheme = themes[theme];
+            const root = document.documentElement;
+            root.style.setProperty('--primary-color', selectedTheme.primary);
+            root.style.setProperty('--secondary-color', selectedTheme.secondary);
+            root.style.setProperty('--accent-color', selectedTheme.accent);
+            root.style.setProperty('--primary-rgb', selectedTheme.primaryRgb);
+            root.style.setProperty('--secondary-rgb', selectedTheme.secondaryRgb);
+        }
+
+        // 初回登録フォーム
+        document.getElementById('setupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            try {
+                // 入力値のチェック
+                const userName = document.getElementById('userName').value.trim();
+                const age = document.getElementById('age').value;
+                const genderElement = document.querySelector('input[name="gender"]:checked');
+                const height = document.getElementById('height').value;
+                const initialWeight = document.getElementById('initialWeight').value;
+                const petTypeElement = document.querySelector('input[name="pet"]:checked');
+                const petName = document.getElementById('petName').value.trim();
+
+                // バリデーション
+                if (!userName) {
+                    alert('名前を入力してください');
+                    return;
+                }
+                if (!genderElement) {
+                    alert('性別を選択してください');
+                    return;
+                }
+                if (!petTypeElement) {
+                    alert('ペットを選択してください');
+                    return;
+                }
+                if (!petName) {
+                    alert('ペットの名前を入力してください');
+                    return;
+                }
+
+                const userProfile = {
+                    name: userName,
+                    age: parseInt(age),
+                    gender: genderElement.value,
+                    height: parseFloat(height),
+                    initialWeight: parseFloat(initialWeight),
+                    registeredDate: new Date().toISOString()
+                };
+
+                localStorage.setItem(STORAGE_KEYS.USER_PROFILE, JSON.stringify(userProfile));
+                
+                // 初回体重を記録
+                const weightRecords = [];
+                weightRecords.push({
+                    date: new Date().toISOString(),
+                    weight: userProfile.initialWeight
+                });
+                localStorage.setItem(STORAGE_KEYS.WEIGHT_RECORDS, JSON.stringify(weightRecords));
+
+                // ペットデータを初期化（ランダムな品種）
+                const petType = petTypeElement.value;
+                const randomBreed = Math.floor(Math.random() * 15); // 0-14のランダムな品種
+                
+                const petData = {
+                    type: petType,
+                    breed: randomBreed,
+                    name: petName,
+                    size: 1,
+                    health: 'normal',
+                    lastFed: new Date().toISOString(),
+                    totalMealsLogged: 0
+                };
+                localStorage.setItem(STORAGE_KEYS.PET_DATA, JSON.stringify(petData));
+
+                console.log('登録処理開始...');
+                console.log('userProfile:', userProfile);
+                console.log('petData:', petData);
+                
+                showMainScreen(userProfile);
+                
+                console.log('showMainScreen完了');
+                
+                // カルーセル初期化を少し遅延させる
+                setTimeout(() => {
+                    try {
+                        console.log('カルーセル初期化開始');
+                        initCarousel();
+                        console.log('カルーセル初期化完了');
+                    } catch (carouselError) {
+                        console.error('カルーセル初期化エラー:', carouselError);
+                    }
+                }, 100);
+                
+            } catch (error) {
+                console.error('登録エラー詳細:', error);
+                console.error('エラースタック:', error.stack);
+                alert('登録中にエラーが発生しました: ' + error.message);
+            }
+        });
+
+        // メイン画面を表示
+        function showMainScreen(userProfile) {
+            try {
+                console.log('showMainScreen開始:', userProfile);
+                
+                document.getElementById('setupScreen').classList.add('hidden');
+                document.getElementById('mainScreen').classList.remove('hidden');
+
+                // プロフィール情報を表示
+                console.log('プロフィール情報表示中...');
+                document.getElementById('displayUserName').textContent = userProfile.name || 'ゲスト';
+                document.getElementById('displayAge').textContent = userProfile.age;
+                document.getElementById('displayGender').textContent = userProfile.gender === 'male' ? '男性' : '女性';
+                document.getElementById('displayHeight').textContent = userProfile.height;
+
+                // 最新の体重でBMIと体脂肪率を計算
+                console.log('統計更新中...');
+                updateStats(userProfile);
+
+                // 今日の歩数と消費カロリーを表示
+                console.log('歩数更新中...');
+                updateTodaySteps(userProfile);
+
+                // 記録を表示
+                console.log('記録表示中...');
+                displayWeightRecords();
+                displayStepsRecords();
+                displayCalorieRecords();
+
+                // ペットを表示
+                console.log('ペット表示中...');
+                updatePetDisplay();
+
+                // 機能トグルを読み込み
+                console.log('機能トグル読み込み中...');
+                loadFeatureToggles();
+
+                // 目標体重を読み込み
+                console.log('目標体重読み込み中...');
+                loadGoalWeight();
+                
+                console.log('showMainScreen完了');
+            } catch (error) {
+                console.error('showMainScreenエラー:', error);
+                console.error('エラースタック:', error.stack);
+                alert('メイン画面の表示中にエラーが発生しました: ' + error.message);
+            }
+        }
+
+        // 基礎代謝量(BMR)を計算 - Harris-Benedict式
+        function calculateBMR(userProfile, weight) {
+            let bmr;
+            if (userProfile.gender === 'male') {
+                // 男性: 13.397 × 体重(kg) + 4.799 × 身長(cm) - 5.677 × 年齢 + 88.362
+                bmr = 13.397 * weight + 4.799 * userProfile.height - 5.677 * userProfile.age + 88.362;
+            } else {
+                // 女性: 9.247 × 体重(kg) + 3.098 × 身長(cm) - 4.330 × 年齢 + 447.593
+                bmr = 9.247 * weight + 3.098 * userProfile.height - 4.330 * userProfile.age + 447.593;
+            }
+            return bmr;
+        }
+
+        // BMIと体脂肪率を更新
+        function updateStats(userProfile) {
+            const weightRecords = JSON.parse(localStorage.getItem(STORAGE_KEYS.WEIGHT_RECORDS)) || [];
+            if (weightRecords.length === 0) return;
+
+            const latestWeight = weightRecords[weightRecords.length - 1].weight;
+            const heightInMeters = userProfile.height / 100;
+
+            // BMI計算
+            const bmi = (latestWeight / (heightInMeters * heightInMeters)).toFixed(1);
+            document.getElementById('bmiValue').textContent = bmi;
+
+            // BMI分類
+            let category = '';
+            if (bmi < 18.5) category = '低体重';
+            else if (bmi < 25) category = '普通体重';
+            else if (bmi < 30) category = '肥満(1度)';
+            else category = '肥満(2度以上)';
+            document.getElementById('bmiCategory').textContent = category;
+
+            // 体脂肪率推定 (簡易計算)
+            let bodyFat;
+            if (userProfile.gender === 'male') {
+                bodyFat = (1.20 * bmi) + (0.23 * userProfile.age) - 16.2;
+            } else {
+                bodyFat = (1.20 * bmi) + (0.23 * userProfile.age) - 5.4;
+            }
+            bodyFat = Math.max(0, Math.min(100, bodyFat)); // 0-100の範囲に制限
+            document.getElementById('bodyFatValue').textContent = bodyFat.toFixed(1);
+
+            // 基礎代謝量(BMR)計算
+            const bmr = calculateBMR(userProfile, latestWeight);
+            document.getElementById('bmrValue').textContent = Math.round(bmr);
+
+            // 総消費カロリー（基礎代謝 + 歩数による消費）を更新
+            updateTotalCalories(bmr);
+        }
+
+        // 総消費カロリーを更新
+        function updateTotalCalories(bmr) {
+            const burnedFromSteps = parseInt(document.getElementById('burnedCalories').textContent) || 0;
+            const totalBurned = Math.round(bmr) + burnedFromSteps;
+            document.getElementById('totalBurnedCalories').textContent = totalBurned;
+        }
+
+        // 体重記録フォーム
+        document.getElementById('weightForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const weight = parseFloat(document.getElementById('weight').value);
+            const weightRecords = JSON.parse(localStorage.getItem(STORAGE_KEYS.WEIGHT_RECORDS)) || [];
+            
+            weightRecords.push({
+                date: new Date().toISOString(),
+                weight: weight
+            });
+
+            localStorage.setItem(STORAGE_KEYS.WEIGHT_RECORDS, JSON.stringify(weightRecords));
+            
+            document.getElementById('weight').value = '';
+            
+            const userProfile = JSON.parse(localStorage.getItem(STORAGE_KEYS.USER_PROFILE));
+            updateStats(userProfile);
+            updateTodaySteps(userProfile); // 体重変更で歩数消費カロリーも再計算
+            displayWeightRecords();
+        });
+
+        // 今日の歩数と消費カロリーを更新
+        function updateTodaySteps(userProfile) {
+            const stepsRecords = JSON.parse(localStorage.getItem(STORAGE_KEYS.STEPS_RECORDS)) || [];
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const todayRecord = stepsRecords.find(record => {
+                const recordDate = new Date(record.date);
+                recordDate.setHours(0, 0, 0, 0);
+                return recordDate.getTime() === today.getTime();
+            });
+
+            if (todayRecord) {
+                document.getElementById('todaySteps').textContent = todayRecord.steps.toLocaleString();
+                
+                // 消費カロリーを計算（歩数 × 体重 × 0.04 ÷ 100）
+                const weightRecords = JSON.parse(localStorage.getItem(STORAGE_KEYS.WEIGHT_RECORDS)) || [];
+                const latestWeight = weightRecords.length > 0 ? weightRecords[weightRecords.length - 1].weight : userProfile.initialWeight;
+                const burnedCalories = Math.round(todayRecord.steps * latestWeight * 0.04 / 100);
+                document.getElementById('burnedCalories').textContent = burnedCalories;
+                
+                // 総消費カロリーを更新
+                const bmrValue = parseInt(document.getElementById('bmrValue').textContent) || 0;
+                updateTotalCalories(bmrValue);
+            } else {
+                document.getElementById('todaySteps').textContent = '0';
+                document.getElementById('burnedCalories').textContent = '0';
+                
+                // 総消費カロリーを更新（基礎代謝のみ）
+                const bmrValue = parseInt(document.getElementById('bmrValue').textContent) || 0;
+                updateTotalCalories(bmrValue);
+            }
+        }
+
+        // 歩数記録フォーム
+        document.getElementById('stepsForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const steps = parseInt(document.getElementById('steps').value);
+            const stepsRecords = JSON.parse(localStorage.getItem(STORAGE_KEYS.STEPS_RECORDS)) || [];
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // 今日の記録があれば更新、なければ追加
+            const existingIndex = stepsRecords.findIndex(record => {
+                const recordDate = new Date(record.date);
+                recordDate.setHours(0, 0, 0, 0);
+                return recordDate.getTime() === today.getTime();
+            });
+
+            if (existingIndex !== -1) {
+                stepsRecords[existingIndex].steps = steps;
+            } else {
+                stepsRecords.push({
+                    date: new Date().toISOString(),
+                    steps: steps
+                });
+            }
+
+            localStorage.setItem(STORAGE_KEYS.STEPS_RECORDS, JSON.stringify(stepsRecords));
+            
+            document.getElementById('steps').value = '';
+            
+            const userProfile = JSON.parse(localStorage.getItem(STORAGE_KEYS.USER_PROFILE));
+            updateTodaySteps(userProfile);
+            displayStepsRecords();
+        });
+
+        // 歩数記録を表示
+        function displayStepsRecords() {
+            const stepsRecords = JSON.parse(localStorage.getItem(STORAGE_KEYS.STEPS_RECORDS)) || [];
+            const userProfile = JSON.parse(localStorage.getItem(STORAGE_KEYS.USER_PROFILE));
+            const weightRecords = JSON.parse(localStorage.getItem(STORAGE_KEYS.WEIGHT_RECORDS)) || [];
+            const container = document.getElementById('stepsRecords');
+            
+            if (stepsRecords.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999;">記録がありません</p>';
+                return;
+            }
+
+            container.innerHTML = stepsRecords.reverse().map(record => {
+                const date = new Date(record.date);
+                const dateStr = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+                
+                // その日に最も近い体重を取得
+                const latestWeight = weightRecords.length > 0 ? weightRecords[weightRecords.length - 1].weight : userProfile.initialWeight;
+                const burnedCalories = Math.round(record.steps * latestWeight * 0.04 / 100);
+                
+                return `
+                    <div class="record-item">
+                        <div>
+                            <div class="date">${dateStr}</div>
+                            <div style="font-size: 12px; color: #999; margin-top: 5px;">消費: ${burnedCalories} kcal</div>
+                        </div>
+                        <div class="values">${record.steps.toLocaleString()} 歩</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 体重記録を表示
+        function displayWeightRecords() {
+            const weightRecords = JSON.parse(localStorage.getItem(STORAGE_KEYS.WEIGHT_RECORDS)) || [];
+            const container = document.getElementById('weightRecords');
+            
+            if (weightRecords.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999;">記録がありません</p>';
+                return;
+            }
+
+            container.innerHTML = weightRecords.reverse().map(record => {
+                const date = new Date(record.date);
+                const dateStr = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+                
+                return `
+                    <div class="record-item">
+                        <div class="date">${dateStr}</div>
+                        <div class="values">${record.weight} kg</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 食事記録フォーム
+        document.getElementById('calorieForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const mealName = document.getElementById('mealName').value;
+            const calories = parseInt(document.getElementById('calories').value);
+            const protein = parseFloat(document.getElementById('protein').value) || 0;
+            const fat = parseFloat(document.getElementById('fat').value) || 0;
+            const carbs = parseFloat(document.getElementById('carbs').value) || 0;
+            
+            const calorieRecords = JSON.parse(localStorage.getItem(STORAGE_KEYS.CALORIE_RECORDS)) || [];
+            
+            calorieRecords.push({
+                date: new Date().toISOString(),
+                mealName: mealName,
+                calories: calories,
+                protein: protein,
+                fat: fat,
+                carbs: carbs
+            });
+
+            localStorage.setItem(STORAGE_KEYS.CALORIE_RECORDS, JSON.stringify(calorieRecords));
+            
+            document.getElementById('mealName').value = '';
+            document.getElementById('calories').value = '';
+            document.getElementById('protein').value = '';
+            document.getElementById('fat').value = '';
+            document.getElementById('carbs').value = '';
+            
+            displayCalorieRecords();
+            updatePFCChart();
+            updatePetOnMeal(); // ペットを更新
+        });
+
+        // 食事記録を表示
+        function displayCalorieRecords() {
+            const calorieRecords = JSON.parse(localStorage.getItem(STORAGE_KEYS.CALORIE_RECORDS)) || [];
+            const container = document.getElementById('calorieRecords');
+            
+            // 今日の日付
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // 今日の記録をフィルタ（インデックスも保持）
+            const todayRecordsWithIndex = calorieRecords
+                .map((record, index) => ({ record, originalIndex: index }))
+                .filter(item => {
+                    const recordDate = new Date(item.record.date);
+                    recordDate.setHours(0, 0, 0, 0);
+                    return recordDate.getTime() === today.getTime();
+                });
+
+            const todayRecords = todayRecordsWithIndex.map(item => item.record);
+
+            // 今日の合計カロリー
+            const totalCalories = todayRecords.reduce((sum, record) => sum + record.calories, 0);
+            document.getElementById('totalCalories').textContent = totalCalories;
+
+            if (todayRecords.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999;">今日の記録がありません</p>';
+                return;
+            }
+
+            container.innerHTML = todayRecordsWithIndex.reverse().map(item => {
+                const record = item.record;
+                const date = new Date(record.date);
+                const timeStr = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+                
+                const pfcInfo = (record.protein || record.fat || record.carbs) 
+                    ? `<div style="font-size: 11px; color: #999; margin-top: 3px;">P:${record.protein || 0}g F:${record.fat || 0}g C:${record.carbs || 0}g</div>`
+                    : '';
+                
+                return `
+                    <div class="record-item" style="position: relative;">
+                        <div style="flex: 1;">
+                            <div class="date">${record.meal || record.mealName}</div>
+                            <div style="font-size: 12px; color: #999; margin-top: 5px;">${timeStr}</div>
+                            ${pfcInfo}
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="values">${record.calories} kcal</div>
+                            <button onclick="deleteCalorieRecord(${item.originalIndex})" style="background: #ff4444; color: white; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer;">削除</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 食事記録を削除
+        function deleteCalorieRecord(index) {
+            if (!confirm('この記録を削除しますか？')) return;
+            
+            const calorieRecords = JSON.parse(localStorage.getItem(STORAGE_KEYS.CALORIE_RECORDS)) || [];
+            calorieRecords.splice(index, 1);
+            localStorage.setItem(STORAGE_KEYS.CALORIE_RECORDS, JSON.stringify(calorieRecords));
+            
+            displayCalorieRecords();
+            updatePFCChart();
+            updatePetDisplay(); // ペットの状態も更新
+            
+            alert('✅ 記録を削除しました');
+        }
+
+        // タブ切り替え
+        function switchTab(tab) {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.getElementById('weightTab').classList.add('hidden');
+            document.getElementById('stepsTab').classList.add('hidden');
+            document.getElementById('calorieTab').classList.add('hidden');
+            document.getElementById('graphsTab').classList.add('hidden');
+            document.getElementById('settingsTab').classList.add('hidden');
+
+            if (tab === 'weight') {
+                document.getElementById('weightTab').classList.remove('hidden');
+            } else if (tab === 'steps') {
+                document.getElementById('stepsTab').classList.remove('hidden');
+            } else if (tab === 'calorie') {
+                document.getElementById('calorieTab').classList.remove('hidden');
+                loadQuickTemplates();
+            } else if (tab === 'graphs') {
+                document.getElementById('graphsTab').classList.remove('hidden');
+                loadGraphToggles();
+                setTimeout(() => {
+                    if (typeof Chart !== 'undefined') {
+                        initGraphCarousel();
+                    } else {
+                        console.warn('Chart.js読み込み待機中...');
+                        setTimeout(() => {
+                            initGraphCarousel();
+                        }, 500);
+                    }
+                }, 200);
+            } else if (tab === 'settings') {
+                document.getElementById('settingsTab').classList.remove('hidden');
+                loadGraphToggles();
+            }
+        }
+
+        // グラフ用の変数
+        let weightChart = null;
+        let calorieChart = null;
+        let pfcChart = null;
+
+        // 体重・BMI・体脂肪率のグラフを更新
+        function updateWeightChart() {
+            if (typeof Chart === 'undefined') {
+                console.warn('Chart.jsがまだ読み込まれていません');
+                return;
+            }
+            
+            const weightRecords = JSON.parse(localStorage.getItem(STORAGE_KEYS.WEIGHT_RECORDS)) || [];
+            const userProfile = JSON.parse(localStorage.getItem(STORAGE_KEYS.USER_PROFILE));
+            
+            if (weightRecords.length === 0) return;
+
+            // 最新7日分のデータを取得
+            const recentRecords = weightRecords.slice(-7);
+            
+            const labels = recentRecords.map(record => {
+                const date = new Date(record.date);
+                return `${date.getMonth() + 1}/${date.getDate()}`;
+            });
+
+            const weights = recentRecords.map(record => record.weight);
+            
+            // BMIを計算
+            const heightInMeters = userProfile.height / 100;
+            const bmis = weights.map(weight => (weight / (heightInMeters * heightInMeters)).toFixed(1));
+            
+            // 体脂肪率を計算
+            const bodyFats = bmis.map(bmi => {
+                let bodyFat;
+                if (userProfile.gender === 'male') {
+                    bodyFat = (1.20 * bmi) + (0.23 * userProfile.age) - 16.2;
+                } else {
+                    bodyFat = (1.20 * bmi) + (0.23 * userProfile.age) - 5.4;
+                }
+                return Math.max(0, Math.min(100, bodyFat)).toFixed(1);
+            });
+
+            const ctx = document.getElementById('weightChart');
+            const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
+            const secondaryColor = getComputedStyle(document.documentElement).getPropertyValue('--secondary-color').trim();
+            const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
+            
+            if (weightChart) {
+                weightChart.destroy();
+            }
+
+            weightChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '体重 (kg)',
+                            data: weights,
+                            borderColor: primaryColor,
+                            backgroundColor: primaryColor + '20',
+                            yAxisID: 'y',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'BMI',
+                            data: bmis,
+                            borderColor: secondaryColor,
+                            backgroundColor: secondaryColor + '20',
+                            yAxisID: 'y1',
+                            tension: 0.4
+                        },
+                        {
+                            label: '体脂肪率 (%)',
+                            data: bodyFats,
+                            borderColor: accentColor,
+                            backgroundColor: accentColor + '20',
+                            yAxisID: 'y1',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: '体重 (kg)'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'BMI / 体脂肪率'
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // カロリー収支のグラフを更新
+        function updateCalorieChart() {
+            if (typeof Chart === 'undefined') {
+                console.warn('Chart.jsがまだ読み込まれていません');
+                return;
+            }
+            
+            const calorieRecords = JSON.parse(localStorage.getItem(STORAGE_KEYS.CALORIE_RECORDS)) || [];
+            const stepsRecords = JSON.parse(localStorage.getItem(STORAGE_KEYS.STEPS_RECORDS)) || [];
+            const weightRecords = JSON.parse(localStorage.getItem(STORAGE_KEYS.WEIGHT_RECORDS)) || [];
+            const userProfile = JSON.parse(localStorage.getItem(STORAGE_KEYS.USER_PROFILE));
+            
+            // 過去7日分のデータを集計
+            const today = new Date();
+            const last7Days = [];
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                date.setHours(0, 0, 0, 0);
+                last7Days.push(date);
+            }
+
+            const labels = last7Days.map(date => `${date.getMonth() + 1}/${date.getDate()}`);
+            const intakeData = [];
+            const burnedData = [];
+            const bmrData = [];
+
+            last7Days.forEach((date, index) => {
+                // その日の摂取カロリー
+                const dayCalories = calorieRecords.filter(record => {
+                    const recordDate = new Date(record.date);
+                    recordDate.setHours(0, 0, 0, 0);
+                    return recordDate.getTime() === date.getTime();
+                }).reduce((sum, record) => sum + record.calories, 0);
+
+                intakeData.push(dayCalories);
+
+                // その日の体重を取得（最新の記録を使用）
+                const dayWeightRecord = weightRecords.filter(record => {
+                    const recordDate = new Date(record.date);
+                    recordDate.setHours(0, 0, 0, 0);
+                    return recordDate.getTime() <= date.getTime();
+                }).pop();
+                
+                const dayWeight = dayWeightRecord ? dayWeightRecord.weight : userProfile.initialWeight;
+
+                // その日の基礎代謝を計算
+                let bmr;
+                if (userProfile.gender === 'male') {
+                    bmr = 13.397 * dayWeight + 4.799 * userProfile.height - 5.677 * userProfile.age + 88.362;
+                } else {
+                    bmr = 9.247 * dayWeight + 3.098 * userProfile.height - 4.330 * userProfile.age + 447.593;
+                }
+                bmr = Math.round(bmr);
+                bmrData.push(bmr);
+
+                // その日の歩数による消費カロリー
+                const daySteps = stepsRecords.find(record => {
+                    const recordDate = new Date(record.date);
+                    recordDate.setHours(0, 0, 0, 0);
+                    return recordDate.getTime() === date.getTime();
+                });
+
+                const stepsBurned = daySteps ? Math.round(daySteps.steps * dayWeight * 0.04 / 100) : 0;
+                
+                // 総消費カロリー = 基礎代謝 + 歩数による消費
+                burnedData.push(bmr + stepsBurned);
+            });
+
+            const ctx = document.getElementById('calorieChart');
+            const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
+            const secondaryColor = getComputedStyle(document.documentElement).getPropertyValue('--secondary-color').trim();
+            const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
+            
+            if (calorieChart) {
+                calorieChart.destroy();
+            }
+
+            calorieChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '摂取カロリー (kcal)',
+                            data: intakeData,
+                            backgroundColor: primaryColor + '80',
+                            borderColor: primaryColor,
+                            borderWidth: 2
+                        },
+                        {
+                            label: '総消費カロリー (kcal)',
+                            data: burnedData,
+                            backgroundColor: secondaryColor + '80',
+                            borderColor: secondaryColor,
+                            borderWidth: 2
+                        },
+                        {
+                            label: '基礎代謝 (kcal)',
+                            data: bmrData,
+                            backgroundColor: accentColor + '40',
+                            borderColor: accentColor,
+                            borderWidth: 1,
+                            borderDash: [5, 5]
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                afterLabel: function(context) {
+                                    if (context.datasetIndex === 1) {
+                                        const index = context.dataIndex;
+                                        const bmr = bmrData[index];
+                                        const stepsBurned = burnedData[index] - bmr;
+                                        return `(基礎代謝: ${bmr} + 歩数: ${stepsBurned})`;
+                                    }
+                                    return '';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'カロリー (kcal)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // PFCバランスのグラフを更新
+        function updatePFCChart() {
+            if (typeof Chart === 'undefined') {
+                console.warn('Chart.jsがまだ読み込まれていません');
+                return;
+            }
+            
+            const calorieRecords = JSON.parse(localStorage.getItem(STORAGE_KEYS.CALORIE_RECORDS)) || [];
+            
+            // 今日の日付
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // 今日の記録をフィルタ
+            const todayRecords = calorieRecords.filter(record => {
+                const recordDate = new Date(record.date);
+                recordDate.setHours(0, 0, 0, 0);
+                return recordDate.getTime() === today.getTime();
+            });
+
+            // PFCの合計を計算
+            let totalProtein = 0;
+            let totalFat = 0;
+            let totalCarbs = 0;
+
+            todayRecords.forEach(record => {
+                totalProtein += record.protein || 0;
+                totalFat += record.fat || 0;
+                totalCarbs += record.carbs || 0;
+            });
+
+            // 表示を更新
+            document.getElementById('totalProtein').textContent = totalProtein.toFixed(1);
+            document.getElementById('totalFat').textContent = totalFat.toFixed(1);
+            document.getElementById('totalCarbs').textContent = totalCarbs.toFixed(1);
+
+            const ctx = document.getElementById('pfcChart');
+            const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
+            const secondaryColor = getComputedStyle(document.documentElement).getPropertyValue('--secondary-color').trim();
+            const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
+            
+            if (pfcChart) {
+                pfcChart.destroy();
+            }
+
+            // データがない場合
+            if (totalProtein === 0 && totalFat === 0 && totalCarbs === 0) {
+                pfcChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['データなし'],
+                        datasets: [{
+                            data: [1],
+                            backgroundColor: ['#e0e0e0']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+                return;
+            }
+
+            pfcChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['タンパク質(P)', '脂質(F)', '炭水化物(C)'],
+                    datasets: [{
+                        data: [totalProtein, totalFat, totalCarbs],
+                        backgroundColor: [
+                            primaryColor,
+                            secondaryColor,
+                            accentColor
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${label}: ${value}g (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ペット関連の関数
+        function updatePetDisplay() {
+            const petData = JSON.parse(localStorage.getItem(STORAGE_KEYS.PET_DATA));
+            if (!petData) return;
+
+            updatePetHealth(petData);
+            const svg = petData.type === 'dog' ? createDogSVG(petData) : createCatSVG(petData);
+            
+            // ユーザー情報セクションのペットを更新
+            const petInInfo = document.getElementById('petAvatarInInfo');
+            if (petInInfo) {
+                petInInfo.innerHTML = svg;
+            }
+        }
+
+        function updatePetHealth(petData) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const calorieRecords = JSON.parse(localStorage.getItem(STORAGE_KEYS.CALORIE_RECORDS)) || [];
+            const userProfile = JSON.parse(localStorage.getItem(STORAGE_KEYS.USER_PROFILE));
+            
+            // 今日の記録を確認
+            const todayRecords = calorieRecords.filter(record => {
+                const recordDate = new Date(record.date);
+                recordDate.setHours(0, 0, 0, 0);
+                return recordDate.getTime() === today.getTime();
+            });
+
+            // 今日の総カロリー
+            const todayCalories = todayRecords.reduce((sum, record) => sum + record.calories, 0);
+            
+            // 基礎代謝を計算
+            const weightRecords = JSON.parse(localStorage.getItem(STORAGE_KEYS.WEIGHT_RECORDS)) || [];
+            const latestWeight = weightRecords.length > 0 ? weightRecords[weightRecords.length - 1].weight : userProfile.initialWeight;
+            
+            let bmr;
+            if (userProfile.gender === 'male') {
+                bmr = 13.397 * latestWeight + 4.799 * userProfile.height - 5.677 * userProfile.age + 88.362;
+            } else {
+                bmr = 9.247 * latestWeight + 3.098 * userProfile.height - 4.330 * userProfile.age + 447.593;
+            }
+
+            // カロリー収支を判定
+            const calorieBalance = todayCalories - bmr;
+            
+            // 健康状態を更新
+            if (todayRecords.length === 0) {
+                // 食事記録なし - 痩せる
+                petData.health = 'thin';
+            } else if (calorieBalance > 500) {
+                // 500kcal以上オーバー - 太る
+                petData.health = 'fat';
+            } else {
+                petData.health = 'normal';
+            }
+
+            // 食事記録数に応じてサイズを更新
+            const totalDaysLogged = new Set(calorieRecords.map(record => {
+                const d = new Date(record.date);
+                return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+            })).size;
+
+            petData.size = Math.min(5, Math.max(1, Math.floor(totalDaysLogged / 3) + 1));
+            
+            localStorage.setItem(STORAGE_KEYS.PET_DATA, JSON.stringify(petData));
+        }
+
+        function updatePetOnMeal() {
+            const petData = JSON.parse(localStorage.getItem(STORAGE_KEYS.PET_DATA));
+            if (!petData) return;
+
+            petData.lastFed = new Date().toISOString();
+            petData.totalMealsLogged++;
+            
+            localStorage.setItem(STORAGE_KEYS.PET_DATA, JSON.stringify(petData));
+            updatePetDisplay();
+            
+            // メッセージを表示
+            showPetMessage('ありがとう！😊');
+        }
+
+        // エイリアス（互換性のため）
+        const updatePetWithMeal = updatePetOnMeal;
+
+        function getPetStatusText(petData) {
+            const healthEmoji = {
+                'normal': '😊',
+                'thin': '😢',
+                'fat': '😅'
+            };
+            
+            const sizeText = ['赤ちゃん', '子供', '少年期', '青年期', '大人'][petData.size - 1];
+            return `${sizeText} ${healthEmoji[petData.health] || '😊'}`;
+        }
+
+        function showPetMessage(message) {
+            const messageEl = document.getElementById('petMessageInInfo');
+            if (!messageEl) return;
+            
+            messageEl.textContent = message;
+            messageEl.classList.add('show');
+            
+            setTimeout(() => {
+                messageEl.classList.remove('show');
+            }, 3000);
+        }
+
+        function petInteraction() {
+            const petData = JSON.parse(localStorage.getItem(STORAGE_KEYS.PET_DATA));
+            if (!petData) return;
+
+            // まずペットの名前を表示
+            showPetMessage(petData.name);
+
+            // 1.5秒後にランダムメッセージを表示
+            setTimeout(() => {
+                const messages = {
+                    'normal': ['元気だよ！', 'ご飯美味しい！', '一緒に頑張ろう！', '今日も楽しいね！'],
+                    'thin': ['お腹すいたよ...', 'ご飯食べたいな...', '記録してね...'],
+                    'fat': ['ちょっと食べすぎかも...', 'お腹いっぱい...', '運動しようかな...']
+                };
+
+                const messageList = messages[petData.health] || messages['normal'];
+                const randomMessage = messageList[Math.floor(Math.random() * messageList.length)];
+                showPetMessage(randomMessage);
+            }, 1500);
+        }
+
+        function createDogSVG(petData) {
+            const baseSize = 50;
+            const size = baseSize + (petData.size - 1) * 8;
+            const bodyScale = petData.health === 'thin' ? 0.85 : petData.health === 'fat' ? 1.2 : 1;
+            const breed = petData.breed || 0;
+
+            // 15種類の犬の品種
+            const dogBreeds = [
+                // 0: ゴールデンレトリバー風（茶色）
+                { bodyColor: '#E8B67A', earColor: '#D4A574', accentColor: '#F5D5A8' },
+                // 1: ラブラドール風（黄色）
+                { bodyColor: '#F4D03F', earColor: '#D4AF37', accentColor: '#FFF8DC' },
+                // 2: ダックスフンド風（濃い茶）
+                { bodyColor: '#8B4513', earColor: '#654321', accentColor: '#D2691E' },
+                // 3: ビーグル風（白茶）
+                { bodyColor: '#DEB887', earColor: '#8B7355', accentColor: '#FFFFFF' },
+                // 4: 柴犬風（オレンジ）
+                { bodyColor: '#FF8C42', earColor: '#FF6B35', accentColor: '#FFF5E1' },
+                // 5: ハスキー風（グレー）
+                { bodyColor: '#A9A9A9', earColor: '#696969', accentColor: '#FFFFFF' },
+                // 6: コーギー風（茶白）
+                { bodyColor: '#CD853F', earColor: '#A0522D', accentColor: '#FAEBD7' },
+                // 7: プードル風（白）
+                { bodyColor: '#F5F5F5', earColor: '#E0E0E0', accentColor: '#FFFFFF' },
+                // 8: ブルドッグ風（ベージュ）
+                { bodyColor: '#D2B48C', earColor: '#BC9A6B', accentColor: '#F5DEB3' },
+                // 9: チワワ風（薄茶）
+                { bodyColor: '#E6C3A3', earColor: '#C9A882', accentColor: '#FFF8F0' },
+                // 10: シュナウザー風（グレー）
+                { bodyColor: '#808080', earColor: '#696969', accentColor: '#D3D3D3' },
+                // 11: ポメラニアン風（オレンジ茶）
+                { bodyColor: '#FFB366', earColor: '#FF9933', accentColor: '#FFD9B3' },
+                // 12: ボーダーコリー風（黒白）
+                { bodyColor: '#2C2C2C', earColor: '#1A1A1A', accentColor: '#FFFFFF' },
+                // 13: ダルメシアン風（白黒）
+                { bodyColor: '#FFFFFF', earColor: '#F0F0F0', accentColor: '#2C2C2C' },
+                // 14: パグ風（フォーン）
+                { bodyColor: '#C8A882', earColor: '#A0826D', accentColor: '#2C2C2C' }
+            ];
+
+            const colors = dogBreeds[breed % 15];
+            
+            return `
+                <svg width="${size * 1.3}" height="${size}" viewBox="0 0 130 100" xmlns="http://www.w3.org/2000/svg">
+                    <ellipse cx="65" cy="92" rx="35" ry="6" fill="rgba(0,0,0,0.1)">
+                        <animate attributeName="rx" values="35;37;35" dur="3s" repeatCount="indefinite"/>
+                    </ellipse>
+                    
+                    <ellipse cx="85" cy="75" rx="10" ry="14" fill="${colors.earColor}"/>
+                    <ellipse cx="45" cy="75" rx="10" ry="14" fill="${colors.earColor}"/>
+                    
+                    <ellipse cx="65" cy="60" rx="${35 * bodyScale}" ry="${22 * bodyScale}" fill="${colors.bodyColor}"/>
+                    
+                    <ellipse cx="50" cy="65" rx="15" ry="12" fill="${colors.accentColor}" opacity="0.7"/>
+                    
+                    <rect x="48" y="70" width="9" height="20" rx="4" fill="${colors.earColor}">
+                        <animateTransform attributeName="transform" type="translate" values="0,0; 0,1; 0,0" dur="1s" repeatCount="indefinite"/>
+                    </rect>
+                    <rect x="35" y="70" width="9" height="20" rx="4" fill="${colors.earColor}">
+                        <animateTransform attributeName="transform" type="translate" values="0,0; 0,1; 0,0" dur="1s" begin="0.5s" repeatCount="indefinite"/>
+                    </rect>
+                    
+                    <ellipse cx="40" cy="89" rx="4" ry="2.5" fill="#FFB6C1"/>
+                    <ellipse cx="52" cy="89" rx="4" ry="2.5" fill="#FFB6C1"/>
+                    
+                    <ellipse cx="50" cy="50" rx="12" ry="15" fill="${colors.bodyColor}"/>
+                    <ellipse cx="45" cy="38" rx="18" ry="20" fill="${colors.bodyColor}"/>
+                    
+                    <ellipse cx="32" cy="35" rx="8" ry="18" fill="${colors.earColor}">
+                        <animateTransform attributeName="transform" type="rotate" values="-5 32 35; -8 32 35; -5 32 35" dur="2.5s" repeatCount="indefinite"/>
+                    </ellipse>
+                    <ellipse cx="58" cy="35" rx="8" ry="18" fill="${colors.earColor}">
+                        <animateTransform attributeName="transform" type="rotate" values="5 58 35; 8 58 35; 5 58 35" dur="2.5s" repeatCount="indefinite"/>
+                    </ellipse>
+                    
+                    <ellipse cx="40" cy="45" rx="14" ry="11" fill="${colors.accentColor}"/>
+                    
+                    <ellipse cx="38" cy="35" rx="4" ry="5" fill="#000">
+                        <animate attributeName="ry" values="5;0.5;5" dur="4s" repeatCount="indefinite"/>
+                    </ellipse>
+                    <ellipse cx="50" cy="35" rx="4" ry="5" fill="#000">
+                        <animate attributeName="ry" values="5;0.5;5" dur="4s" repeatCount="indefinite"/>
+                    </ellipse>
+                    
+                    <circle cx="39" cy="33" r="1.5" fill="#fff" opacity="0.8"/>
+                    <circle cx="51" cy="33" r="1.5" fill="#fff" opacity="0.8"/>
+                    
+                    <ellipse cx="40" cy="48" rx="5" ry="4" fill="#000"/>
+                    
+                    <ellipse cx="40" cy="54" rx="3" ry="5" fill="#FF69B4">
+                        <animate attributeName="ry" values="5;6;5" dur="1.5s" repeatCount="indefinite"/>
+                    </ellipse>
+                    
+                    <path d="M 40 48 Q 35 52 32 50" stroke="#000" stroke-width="1.5" fill="none"/>
+                    <path d="M 40 48 Q 45 52 48 50" stroke="#000" stroke-width="1.5" fill="none"/>
+                    
+                    <path d="M 95 55 Q 110 50 118 48" stroke="${colors.earColor}" stroke-width="8" fill="none" stroke-linecap="round">
+                        <animateTransform attributeName="transform" type="rotate" values="0 95 55; 20 95 55; 0 95 55; -5 95 55; 0 95 55" dur="1.2s" repeatCount="indefinite"/>
+                    </path>
+                    <ellipse cx="118" cy="48" rx="5" ry="6" fill="${colors.earColor}">
+                        <animateTransform attributeName="transform" type="rotate" values="0 118 48; 20 118 48; 0 118 48; -5 118 48; 0 118 48" dur="1.2s" repeatCount="indefinite"/>
+                    </ellipse>
+                </svg>
+            `;
+        }
+
+        function createCatSVG(petData) {
+            const baseSize = 50;
+            const size = baseSize + (petData.size - 1) * 8;
+            const bodyScale = petData.health === 'thin' ? 0.85 : petData.health === 'fat' ? 1.2 : 1;
+            const breed = petData.breed || 0;
+
+            // 15種類の猫の品種
+            const catBreeds = [
+                // 0: 茶トラ
+                { bodyColor: '#FFB299', earColor: '#FF9E7A', eyeColor: '#2ECC71' },
+                // 1: 白猫
+                { bodyColor: '#FFFFFF', earColor: '#F5F5F5', eyeColor: '#4A90E2' },
+                // 2: 黒猫
+                { bodyColor: '#2C2C2C', earColor: '#1A1A1A', eyeColor: '#FFD700' },
+                // 3: グレー（ロシアンブルー風）
+                { bodyColor: '#9BA0A5', earColor: '#7D8287', eyeColor: '#2ECC71' },
+                // 4: キジトラ
+                { bodyColor: '#B8956A', earColor: '#9A7B54', eyeColor: '#DAA520' },
+                // 5: 三毛猫
+                { bodyColor: '#F4A460', earColor: '#CD853F', eyeColor: '#228B22' },
+                // 6: サバトラ
+                { bodyColor: '#708090', earColor: '#556B2F', eyeColor: '#32CD32' },
+                // 7: クリーム色
+                { bodyColor: '#FFFACD', earColor: '#FFE4B5', eyeColor: '#4682B4' },
+                // 8: シャム風（ポイント）
+                { bodyColor: '#F5E6D3', earColor: '#8B7355', eyeColor: '#4169E1' },
+                // 9: チンチラ風（シルバー）
+                { bodyColor: '#E6E6FA', earColor: '#D8BFD8', eyeColor: '#2ECC71' },
+                // 10: 薄茶
+                { bodyColor: '#E6C3A3', earColor: '#C9A882', eyeColor: '#CD853F' },
+                // 11: オレンジ
+                { bodyColor: '#FF8C42', earColor: '#FF6B35', eyeColor: '#FFD700' },
+                // 12: 縞々（タビー）
+                { bodyColor: '#D2B48C', earColor: '#BC9A6B', eyeColor: '#8B4513' },
+                // 13: 薄グレー
+                { bodyColor: '#C0C0C0', earColor: '#A9A9A9', eyeColor: '#4682B4' },
+                // 14: ブラウン
+                { bodyColor: '#A0826D', earColor: '#8B6F47', eyeColor: '#DAA520' }
+            ];
+
+            const colors = catBreeds[breed % 15];
+            
+            return `
+                <svg width="${size * 1.2}" height="${size}" viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg">
+                    <ellipse cx="60" cy="92" rx="30" ry="6" fill="rgba(0,0,0,0.1)">
+                        <animate attributeName="rx" values="30;32;30" dur="3s" repeatCount="indefinite"/>
+                    </ellipse>
+                    
+                    <ellipse cx="75" cy="75" rx="11" ry="16" fill="${colors.earColor}"/>
+                    <ellipse cx="45" cy="75" rx="11" ry="16" fill="${colors.earColor}"/>
+                    
+                    <ellipse cx="75" cy="88" rx="5" ry="3" fill="#FFB6C1"/>
+                    <ellipse cx="45" cy="88" rx="5" ry="3" fill="#FFB6C1"/>
+                    
+                    <ellipse cx="60" cy="60" rx="${32 * bodyScale}" ry="${20 * bodyScale}" fill="${colors.bodyColor}"/>
+                    
+                    <ellipse cx="48" cy="65" rx="14" ry="12" fill="#FFF" opacity="0.9"/>
+                    
+                    <rect x="43" y="68" width="8" height="20" rx="4" fill="${colors.earColor}">
+                        <animateTransform attributeName="transform" type="translate" values="0,0; 0,1; 0,0" dur="1.3s" repeatCount="indefinite"/>
+                    </rect>
+                    <rect x="30" y="68" width="8" height="20" rx="4" fill="${colors.earColor}">
+                        <animateTransform attributeName="transform" type="translate" values="0,0; 0,1; 0,0" dur="1.3s" begin="0.65s" repeatCount="indefinite"/>
+                    </rect>
+                    
+                    <ellipse cx="34" cy="87" rx="3" ry="2" fill="#FFB6C1"/>
+                    <ellipse cx="47" cy="87" rx="3" ry="2" fill="#FFB6C1"/>
+                    
+                    <ellipse cx="48" cy="48" rx="13" ry="14" fill="${colors.bodyColor}"/>
+                    <ellipse cx="45" cy="35" rx="20" ry="18" fill="${colors.bodyColor}"/>
+                    
+                    <ellipse cx="45" cy="26" rx="12" ry="7" fill="${colors.earColor}" opacity="0.6"/>
+                    
+                    <path d="M 28 22 L 32 8 L 38 20 Z" fill="${colors.bodyColor}">
+                        <animateTransform attributeName="transform" type="rotate" values="0 33 14; -3 33 14; 0 33 14" dur="3s" repeatCount="indefinite"/>
+                    </path>
+                    <path d="M 52 20 L 58 8 L 62 22 Z" fill="${colors.bodyColor}">
+                        <animateTransform attributeName="transform" type="rotate" values="0 57 14; 3 57 14; 0 57 14" dur="3s" repeatCount="indefinite"/>
+                    </path>
+                    
+                    <path d="M 30 20 L 32 12 L 35 18 Z" fill="#FFD4C4"/>
+                    <path d="M 55 18 L 58 12 L 60 20 Z" fill="#FFD4C4"/>
+                    
+                    <ellipse cx="42" cy="42" rx="11" ry="9" fill="#FFF" opacity="0.9"/>
+                    
+                    <ellipse cx="38" cy="32" rx="5" ry="8" fill="${colors.eyeColor}">
+                        <animate attributeName="ry" values="8;1;8" dur="5s" repeatCount="indefinite"/>
+                    </ellipse>
+                    <ellipse cx="52" cy="32" rx="5" ry="8" fill="${colors.eyeColor}">
+                        <animate attributeName="ry" values="8;1;8" dur="5s" repeatCount="indefinite"/>
+                    </ellipse>
+                    
+                    <ellipse cx="38" cy="32" rx="2" ry="5" fill="#000">
+                        <animate attributeName="ry" values="5;0.5;5" dur="5s" repeatCount="indefinite"/>
+                    </ellipse>
+                    <ellipse cx="52" cy="32" rx="2" ry="5" fill="#000">
+                        <animate attributeName="ry" values="5;0.5;5" dur="5s" repeatCount="indefinite"/>
+                    </ellipse>
+                    
+                    <circle cx="39" cy="29" r="1.5" fill="#fff" opacity="0.9"/>
+                    <circle cx="53" cy="29" r="1.5" fill="#fff" opacity="0.9"/>
+                    
+                    <path d="M 42 40 L 39 43 L 42 44 L 45 43 Z" fill="#FF6B9D"/>
+                    
+                    <path d="M 42 44 L 42 46" stroke="#000" stroke-width="1.5"/>
+                    <path d="M 42 46 Q 37 49 34 47" stroke="#000" stroke-width="1.5" fill="none"/>
+                    <path d="M 42 46 Q 47 49 50 47" stroke="#000" stroke-width="1.5" fill="none"/>
+                    
+                    <line x1="18" y1="34" x2="30" y2="33" stroke="#000" stroke-width="1" opacity="0.6">
+                        <animateTransform attributeName="transform" type="rotate" values="0 30 33; 2 30 33; 0 30 33" dur="3s" repeatCount="indefinite"/>
+                    </line>
+                    <line x1="18" y1="38" x2="30" y2="38" stroke="#000" stroke-width="1" opacity="0.6"/>
+                    <line x1="60" y1="33" x2="72" y2="34" stroke="#000" stroke-width="1" opacity="0.6">
+                        <animateTransform attributeName="transform" type="rotate" values="0 60 33; -2 60 33; 0 60 33" dur="3s" repeatCount="indefinite"/>
+                    </line>
+                    <line x1="60" y1="38" x2="72" y2="38" stroke="#000" stroke-width="1" opacity="0.6"/>
+                    
+                    <path d="M 88 58 Q 100 48 106 36 Q 112 24 108 14" stroke="${colors.bodyColor}" stroke-width="8" fill="none" stroke-linecap="round">
+                        <animateTransform attributeName="transform" type="rotate" values="0 88 58; 15 88 58; 0 88 58; -10 88 58; 0 88 58" dur="3s" repeatCount="indefinite"/>
+                    </path>
+                    
+                    <circle cx="108" cy="14" r="5" fill="${colors.earColor}">
+                        <animateTransform attributeName="transform" type="rotate" values="0 108 14; 15 108 14; 0 108 14; -10 108 14; 0 108 14" dur="3s" repeatCount="indefinite"/>
+                    </circle>
+                </svg>
+            `;
+        }
+
+        // データのエクスポート（ダウンロード）
+        function exportData() {
+            const allData = {
+                userProfile: JSON.parse(localStorage.getItem(STORAGE_KEYS.USER_PROFILE)),
+                weightRecords: JSON.parse(localStorage.getItem(STORAGE_KEYS.WEIGHT_RECORDS)),
+                calorieRecords: JSON.parse(localStorage.getItem(STORAGE_KEYS.CALORIE_RECORDS)),
+                stepsRecords: JSON.parse(localStorage.getItem(STORAGE_KEYS.STEPS_RECORDS)),
+                petData: JSON.parse(localStorage.getItem(STORAGE_KEYS.PET_DATA)),
+                theme: localStorage.getItem(STORAGE_KEYS.THEME),
+                exportDate: new Date().toISOString()
+            };
+
+            const dataStr = JSON.stringify(allData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            
+            const fileName = `fitness_backup_${new Date().toISOString().slice(0, 10)}.json`;
+            link.download = fileName;
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            alert('✅ バックアップファイルをダウンロードしました！\n\nこのファイルを大切に保管してください。');
+        }
+
+        // データのインポート（復元）
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    // データの妥当性チェック
+                    if (!data.userProfile) {
+                        alert('❌ 無効なバックアップファイルです');
+                        return;
+                    }
+
+                    // 確認メッセージ
+                    if (!confirm('⚠️ 現在のデータを上書きしますか？\n\n復元すると、現在のデータは失われます。')) {
+                        return;
+                    }
+
+                    // データを復元
+                    if (data.userProfile) localStorage.setItem(STORAGE_KEYS.USER_PROFILE, JSON.stringify(data.userProfile));
+                    if (data.weightRecords) localStorage.setItem(STORAGE_KEYS.WEIGHT_RECORDS, JSON.stringify(data.weightRecords));
+                    if (data.calorieRecords) localStorage.setItem(STORAGE_KEYS.CALORIE_RECORDS, JSON.stringify(data.calorieRecords));
+                    if (data.stepsRecords) localStorage.setItem(STORAGE_KEYS.STEPS_RECORDS, JSON.stringify(data.stepsRecords));
+                    if (data.petData) localStorage.setItem(STORAGE_KEYS.PET_DATA, JSON.stringify(data.petData));
+                    if (data.theme) localStorage.setItem(STORAGE_KEYS.THEME, data.theme);
+
+                    alert('✅ データを復元しました！\n\nページを再読み込みします。');
+                    location.reload();
+                } catch (error) {
+                    alert('❌ ファイルの読み込みに失敗しました\n\n' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // すべてのデータをリセット
+        function resetAllData() {
+            if (!confirm('⚠️ 本当にすべてのデータを削除しますか？\n\nこの操作は取り消せません。')) {
+                return;
+            }
+
+            if (!confirm('⚠️⚠️ 最終確認です！\n\n本当に削除しますか？\nバックアップは取りましたか？')) {
+                return;
+            }
+
+            // すべてのデータを削除
+            Object.values(STORAGE_KEYS).forEach(key => {
+                localStorage.removeItem(key);
+            });
+
+            alert('✅ すべてのデータを削除しました\n\nページを再読み込みします。');
+            location.reload();
+        }
+
+        // 機能の表示/非表示を切り替え
+        function toggleFeature(feature) {
+            const toggles = JSON.parse(localStorage.getItem(STORAGE_KEYS.FEATURE_TOGGLES)) || {
+                weight: true,
+                steps: true,
+                calorie: true,
+                graphs: true,
+                goal: true
+            };
+
+            const checkbox = document.getElementById(`toggle${feature.charAt(0).toUpperCase() + feature.slice(1)}`);
+            toggles[feature] = checkbox.checked;
+
+            localStorage.setItem(STORAGE_KEYS.FEATURE_TOGGLES, JSON.stringify(toggles));
+            applyFeatureToggles();
+        }
+
+        // 機能の表示設定を適用
+        function applyFeatureToggles() {
+            const toggles = JSON.parse(localStorage.getItem(STORAGE_KEYS.FEATURE_TOGGLES)) || {
+                weight: true,
+                steps: true,
+                calorie: true,
+                graphs: true,
+                goal: true
+            };
+
+            // タブの表示/非表示
+            document.querySelectorAll('.tab[data-feature]').forEach(tab => {
+                const feature = tab.getAttribute('data-feature');
+                if (toggles[feature]) {
+                    tab.classList.remove('hidden-feature');
+                } else {
+                    tab.classList.add('hidden-feature');
+                }
+            });
+
+            // 目標体重セクションの表示/非表示
+            const goalSection = document.getElementById('goalWeightSection');
+            const predictionSection = document.getElementById('predictionGraphSection');
+            if (goalSection) {
+                goalSection.style.display = toggles.goal ? 'block' : 'none';
+            }
+            if (predictionSection) {
+                predictionSection.style.display = toggles.goal ? 'block' : 'none';
+            }
+
+            // アクティブなタブが非表示の場合、設定タブに切り替え
+            const activeTab = document.querySelector('.tab.active');
+            if (activeTab && activeTab.classList.contains('hidden-feature')) {
+                switchTab('settings');
+            }
+        }
+
+        // 機能トグルのチェックボックス状態を読み込み
+        function loadFeatureToggles() {
+            const toggles = JSON.parse(localStorage.getItem(STORAGE_KEYS.FEATURE_TOGGLES)) || {
+                weight: true,
+                steps: true,
+                calorie: true,
+                graphs: true,
+                goal: true
+            };
+
+            document.getElementById('toggleWeight').checked = toggles.weight;
+            document.getElementById('toggleSteps').checked = toggles.steps;
+            document.getElementById('toggleCalorie').checked = toggles.calorie;
+            document.getElementById('toggleGraphs').checked = toggles.graphs;
+            document.getElementById('toggleGoal').checked = toggles.goal;
+
+            applyFeatureToggles();
+        }
+
+        // グラフカルーセルの変数
+        let currentGraphSlide = 0;
+        let graphTouchStartX = 0;
+        let graphTouchEndX = 0;
+
+        // グラフカルーセルの初期化
+        let graphCarouselInitialized = false;
+        
+        function initGraphCarousel() {
+            try {
+                const container = document.getElementById('graphsContainer');
+                const dotsContainer = document.getElementById('graphDots');
+                
+                if (!container || !dotsContainer) {
+                    console.warn('グラフコンテナが見つかりません');
+                    return;
+                }
+
+                // 表示されているグラフのスライドを取得
+                const visibleSlides = getVisibleGraphSlides();
+                
+                if (visibleSlides.length === 0) {
+                    console.warn('表示可能なグラフがありません');
+                    return;
+                }
+                
+                // ドットをクリア
+                dotsContainer.innerHTML = '';
+                
+                // ドットを生成
+                visibleSlides.forEach((slide, index) => {
+                    const dot = document.createElement('div');
+                    dot.className = 'carousel-dot';
+                    if (index === 0) dot.classList.add('active');
+                    dot.addEventListener('click', () => goToGraphSlide(index));
+                    dotsContainer.appendChild(dot);
+                });
+
+                // イベントリスナーは一度だけ追加
+                if (!graphCarouselInitialized) {
+                    // スワイプイベント
+                    container.addEventListener('touchstart', (e) => {
+                        graphTouchStartX = e.changedTouches[0].screenX;
+                    });
+
+                    container.addEventListener('touchend', (e) => {
+                        graphTouchEndX = e.changedTouches[0].screenX;
+                        handleGraphSwipe();
+                    });
+
+                    // マウスドラッグイベント
+                    let mouseDown = false;
+                    let startX = 0;
+
+                    container.addEventListener('mousedown', (e) => {
+                        mouseDown = true;
+                        startX = e.pageX;
+                    });
+
+                    container.addEventListener('mouseup', (e) => {
+                        if (!mouseDown) return;
+                        mouseDown = false;
+                        const endX = e.pageX;
+                        const diff = startX - endX;
+                        
+                        const visibleSlides = getVisibleGraphSlides();
+                        if (Math.abs(diff) > 50) {
+                            if (diff > 0 && currentGraphSlide < visibleSlides.length - 1) {
+                                goToGraphSlide(currentGraphSlide + 1);
+                            } else if (diff < 0 && currentGraphSlide > 0) {
+                                goToGraphSlide(currentGraphSlide - 1);
+                            }
+                        }
+                    });
+
+                    graphCarouselInitialized = true;
+                }
+
+                goToGraphSlide(0);
+            } catch (error) {
+                console.error('グラフカルーセル初期化エラー:', error);
+            }
+        }
+
+        function handleGraphSwipe() {
+            const visibleSlides = getVisibleGraphSlides();
+            if (graphTouchEndX < graphTouchStartX && currentGraphSlide < visibleSlides.length - 1) {
+                goToGraphSlide(currentGraphSlide + 1);
+            }
+            if (graphTouchEndX > graphTouchStartX && currentGraphSlide > 0) {
+                goToGraphSlide(currentGraphSlide - 1);
+            }
+        }
+
+        function goToGraphSlide(index) {
+            const visibleSlides = getVisibleGraphSlides();
+            currentGraphSlide = Math.max(0, Math.min(index, visibleSlides.length - 1));
+            
+            const container = document.getElementById('graphsContainer');
+            if (container) {
+                container.style.transform = `translateX(-${currentGraphSlide * 100}%)`;
+            }
+
+            // ドットの更新
+            const dots = document.querySelectorAll('#graphDots .carousel-dot');
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === currentGraphSlide);
+            });
+
+            // 現在のグラフを更新
+            updateCurrentGraph();
+        }
+
+        function getVisibleGraphSlides() {
+            const toggles = JSON.parse(localStorage.getItem('fitnessApp_graphToggles')) || {
+                weightGraph: true,
+                calorieGraph: true,
+                predictionGraph: true,
+                pfcGraph: true
+            };
+
+            const slides = [];
+            if (toggles.weightGraph) slides.push(document.getElementById('weightGraphSlide'));
+            if (toggles.calorieGraph) slides.push(document.getElementById('calorieGraphSlide'));
+            if (toggles.predictionGraph) slides.push(document.getElementById('predictionGraphSlide'));
+            if (toggles.pfcGraph) slides.push(document.getElementById('pfcGraphSlide'));
+
+            return slides.filter(s => s !== null);
+        }
+
+        function updateCurrentGraph() {
+            try {
+                const visibleSlides = getVisibleGraphSlides();
+                if (visibleSlides.length === 0) return;
+
+                const currentSlide = visibleSlides[currentGraphSlide];
+                if (!currentSlide) return;
+
+                // 現在のグラフに応じて更新
+                if (currentSlide.id === 'weightGraphSlide') {
+                    updateWeightChart();
+                } else if (currentSlide.id === 'calorieGraphSlide') {
+                    updateCalorieChart();
+                } else if (currentSlide.id === 'predictionGraphSlide') {
+                    updatePredictionGraph();
+                } else if (currentSlide.id === 'pfcGraphSlide') {
+                    updatePFCChart();
+                }
+            } catch (error) {
+                console.error('グラフ更新エラー:', error);
+            }
+        }
+
+        // グラフの表示/非表示を切り替え
+        function toggleGraph(graph) {
+            const toggles = JSON.parse(localStorage.getItem('fitnessApp_graphToggles')) || {
+                weightGraph: true,
+                calorieGraph: true,
+                predictionGraph: true,
+                pfcGraph: true
+            };
+
+            const checkbox = document.getElementById(`toggle${graph.charAt(0).toUpperCase() + graph.slice(1)}`);
+            toggles[graph] = checkbox.checked;
+
+            localStorage.setItem('fitnessApp_graphToggles', JSON.stringify(toggles));
+            applyGraphToggles();
+        }
+
+        // グラフの表示設定を適用
+        function applyGraphToggles() {
+            const toggles = JSON.parse(localStorage.getItem('fitnessApp_graphToggles')) || {
+                weightGraph: true,
+                calorieGraph: true,
+                predictionGraph: true,
+                pfcGraph: true
+            };
+
+            // 各グラフスライドの表示/非表示
+            document.getElementById('weightGraphSlide').style.display = toggles.weightGraph ? 'block' : 'none';
+            document.getElementById('calorieGraphSlide').style.display = toggles.calorieGraph ? 'block' : 'none';
+            document.getElementById('predictionGraphSlide').style.display = toggles.predictionGraph ? 'block' : 'none';
+            document.getElementById('pfcGraphSlide').style.display = toggles.pfcGraph ? 'block' : 'none';
+
+            // カルーセルを再初期化
+            initGraphCarousel();
+        }
+
+        // グラフトグルの読み込み
+        function loadGraphToggles() {
+            const toggles = JSON.parse(localStorage.getItem('fitnessApp_graphToggles')) || {
+                weightGraph: true,
+                calorieGraph: true,
+                predictionGraph: true,
+                pfcGraph: true
+            };
+
+            document.getElementById('toggleWeightGraph').checked = toggles.weightGraph;
+            document.getElementById('toggleCalorieGraph').checked = toggles.calorieGraph;
+            document.getElementById('togglePredictionGraph').checked = toggles.predictionGraph;
+            document.getElementById('togglePFCGraph').checked = toggles.pfcGraph;
+
+            applyGraphToggles();
+        }
+
+        // 目標体重の保存
+        function saveGoalWeight() {
+            const goalWeightInput = document.getElementById('goalWeightInput').value;
+            
+            // 入力が空の場合
+            if (!goalWeightInput || goalWeightInput.trim() === '') {
+                localStorage.removeItem(STORAGE_KEYS.GOAL_WEIGHT);
+                document.getElementById('goalCalculations').style.display = 'none';
+                updatePredictionGraph(); // グラフも更新（目標線を消す）
+                return;
+            }
+            
+            const goalWeight = parseFloat(goalWeightInput);
+            
+            // 有効な数値の場合のみ保存・更新
+            if (goalWeight && goalWeight > 0) {
+                localStorage.setItem(STORAGE_KEYS.GOAL_WEIGHT, goalWeight.toString());
+                updateGoalCalculations(); // 推奨カロリーなどを更新
+                updatePredictionGraph(); // グラフを更新
+            }
+        }
+
+        // 目標体重の計算を更新
+        function updateGoalCalculations() {
+            const goalWeight = parseFloat(localStorage.getItem(STORAGE_KEYS.GOAL_WEIGHT));
+            if (!goalWeight) {
+                document.getElementById('goalCalculations').style.display = 'none';
+                return;
+            }
+
+            const userProfile = JSON.parse(localStorage.getItem(STORAGE_KEYS.USER_PROFILE));
+            const weightRecords = JSON.parse(localStorage.getItem(STORAGE_KEYS.WEIGHT_RECORDS)) || [];
+            
+            if (weightRecords.length === 0) return;
+
+            const currentWeight = weightRecords[weightRecords.length - 1].weight;
+            const weightDiff = goalWeight - currentWeight; // 正の値=増量、負の値=減量
+
+            // 基礎代謝を計算
+            const bmr = calculateBMR(userProfile, currentWeight);
+            
+            // 平均活動量（歩数による消費カロリー）を計算
+            const stepsRecords = JSON.parse(localStorage.getItem(STORAGE_KEYS.STEPS_RECORDS)) || [];
+            const last7DaysSteps = stepsRecords.slice(-7);
+            const avgStepsCalories = last7DaysSteps.length > 0
+                ? last7DaysSteps.reduce((sum, record) => sum + Math.round(record.steps * currentWeight * 0.04 / 100), 0) / last7DaysSteps.length
+                : 200; // デフォルト200kcal
+
+            // 総消費カロリー = BMR + 活動量
+            const totalBurn = Math.round(bmr + avgStepsCalories);
+
+            let recommendedCalories;
+            let daysToGoal;
+            let goalType;
+
+            if (weightDiff > 0) {
+                // 増量（バルクアップ）の場合
+                goalType = '増量';
+                // 推奨摂取カロリー: 総消費 + 300〜500kcal（無理のないペース）
+                recommendedCalories = Math.round(totalBurn + 400);
+                // 1kg増やすのに約7200kcal必要、1日+400kcalなら約18日
+                daysToGoal = Math.round(Math.abs(weightDiff) * 7200 / 400);
+            } else if (weightDiff < 0) {
+                // 減量（ダイエット）の場合
+                goalType = '減量';
+                // 推奨摂取カロリー: 総消費 - 500kcal（無理のないペース）
+                recommendedCalories = Math.round(totalBurn - 500);
+                // 1kg減らすのに約7200kcal削減、1日-500kcalなら約14日
+                daysToGoal = Math.round(Math.abs(weightDiff) * 7200 / 500);
+            } else {
+                // 維持の場合
+                goalType = '維持';
+                recommendedCalories = totalBurn;
+                daysToGoal = 0;
+            }
+
+            const goalDate = new Date();
+            goalDate.setDate(goalDate.getDate() + daysToGoal);
+
+            // 表示を更新
+            document.getElementById('goalCalculations').style.display = 'block';
+            document.getElementById('currentWeight').textContent = currentWeight.toFixed(1);
+            document.getElementById('displayGoalWeight').textContent = goalWeight.toFixed(1);
+            
+            // 残り体重の表示（増量・減量で表現を変える）
+            if (weightDiff > 0) {
+                document.getElementById('weightDifference').textContent = `+${weightDiff.toFixed(1)}`;
+            } else if (weightDiff < 0) {
+                document.getElementById('weightDifference').textContent = weightDiff.toFixed(1);
+            } else {
+                document.getElementById('weightDifference').textContent = '0.0';
+            }
+            
+            document.getElementById('recommendedCalories').textContent = recommendedCalories;
+            
+            // カロリー説明を更新
+            let calorieExplanation;
+            if (weightDiff > 0) {
+                calorieExplanation = '基礎代謝 + 活動量 + 400kcal（増量ペース）';
+            } else if (weightDiff < 0) {
+                calorieExplanation = '基礎代謝 + 活動量 - 500kcal（減量ペース）';
+            } else {
+                calorieExplanation = '基礎代謝 + 活動量（維持）';
+            }
+            document.getElementById('calorieExplanation').textContent = calorieExplanation;
+            
+            // 達成予測の表示
+            if (daysToGoal > 0) {
+                document.getElementById('daysToGoal').textContent = daysToGoal;
+                document.getElementById('goalDate').textContent = goalDate.toLocaleDateString('ja-JP');
+            } else {
+                document.getElementById('daysToGoal').textContent = '達成済み';
+                document.getElementById('goalDate').textContent = '-';
+            }
+            
+            // グラフも更新
+            updatePredictionGraph();
+        }
+
+        // 目標体重の読み込み
+        function loadGoalWeight() {
+            const goalWeight = localStorage.getItem(STORAGE_KEYS.GOAL_WEIGHT);
+            if (goalWeight) {
+                document.getElementById('goalWeightInput').value = goalWeight;
+                updateGoalCalculations();
+            }
+        }
+
+        // 体重予測グラフの更新
+        function updatePredictionGraph() {
+            try {
+                // Chart.jsの読み込み確認
+                if (typeof Chart === 'undefined') {
+                    console.warn('Chart.jsがまだ読み込まれていません');
+                    return;
+                }
+
+                const canvas = document.getElementById('predictionChart');
+                if (!canvas) {
+                    console.warn('予測グラフのcanvas要素が見つかりません');
+                    return;
+                }
+
+                const weightRecords = JSON.parse(localStorage.getItem(STORAGE_KEYS.WEIGHT_RECORDS)) || [];
+                
+                // データ不足の場合、グラフにメッセージを表示
+                if (weightRecords.length < 2) {
+                    const ctx = canvas.getContext('2d');
+                    
+                    // 既存のグラフを破棄
+                    if (window.predictionChartInstance) {
+                        window.predictionChartInstance.destroy();
+                    }
+
+                    // 空のグラフを作成してメッセージを表示
+                    window.predictionChartInstance = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: [''],
+                            datasets: []
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: { enabled: false }
+                            },
+                            scales: {
+                                x: { display: false },
+                                y: { display: false }
+                            }
+                        },
+                        plugins: [{
+                            afterDraw: (chart) => {
+                                const ctx = chart.ctx;
+                                const width = chart.width;
+                                const height = chart.height;
+                                
+                                ctx.save();
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                ctx.font = '16px sans-serif';
+                                ctx.fillStyle = '#999';
+                                ctx.fillText('📊 データが不足しています', width / 2, height / 2 - 20);
+                                ctx.font = '14px sans-serif';
+                                ctx.fillText('体重を2回以上記録すると', width / 2, height / 2 + 10);
+                                ctx.fillText('予測グラフが表示されます', width / 2, height / 2 + 35);
+                                ctx.restore();
+                            }
+                        }]
+                    });
+
+                    // 2週間後の予測も非表示
+                    const predictionEl = document.getElementById('twoWeekPrediction');
+                    if (predictionEl) {
+                        predictionEl.textContent = '--';
+                    }
+                    
+                    return;
+                }
+
+                const lastWeight = weightRecords[weightRecords.length - 1].weight;
+                const goalWeight = parseFloat(localStorage.getItem(STORAGE_KEYS.GOAL_WEIGHT));
+
+                // 過去14日間（または全データ）から実際の傾向を計算
+                const recentDays = Math.min(14, weightRecords.length);
+                const recentRecords = weightRecords.slice(-recentDays);
+                const firstWeight = recentRecords[0].weight;
+                const days = recentRecords.length - 1;
+                
+                // 実際の1日あたりの変化量
+                let actualDailyChange = days > 0 ? (lastWeight - firstWeight) / days : 0;
+
+                // 予測の変化量を決定
+                let predictedDailyChange;
+                
+                if (goalWeight) {
+                    // 目標体重がある場合：目標に基づく計算
+                    const weightDiff = goalWeight - lastWeight;
+                    
+                    let targetDailyChange;
+                    if (weightDiff > 0) {
+                        // 増量目標: +400kcal/日 = 約+0.056kg/日
+                        targetDailyChange = 0.056;
+                    } else if (weightDiff < 0) {
+                        // 減量目標: -500kcal/日 = 約-0.069kg/日
+                        targetDailyChange = -0.069;
+                    } else {
+                        // 維持
+                        targetDailyChange = 0;
+                    }
+
+                    // 実際の変化と目標の変化を組み合わせる（実績70% + 目標30%）
+                    if (Math.abs(actualDailyChange) < 0.01) {
+                        // データが少ない場合は目標ベース
+                        predictedDailyChange = targetDailyChange;
+                    } else {
+                        // 実績を重視しつつ目標も考慮
+                        predictedDailyChange = actualDailyChange * 0.7 + targetDailyChange * 0.3;
+                    }
+                } else {
+                    // 目標体重がない場合：過去の傾向のみから予測
+                    if (Math.abs(actualDailyChange) < 0.01) {
+                        // 変化がほぼない場合は維持と仮定
+                        predictedDailyChange = 0;
+                    } else {
+                        // 過去の傾向を継続
+                        predictedDailyChange = actualDailyChange;
+                    }
+                }
+
+                // 現実的な範囲に制限（1日あたり-0.5kg〜+0.3kg）
+                predictedDailyChange = Math.max(-0.5, Math.min(0.3, predictedDailyChange));
+
+                // 2週間後の予測
+                let twoWeekPrediction = lastWeight + (predictedDailyChange * 14);
+                
+                // 予測が現在体重から±10kg以内に収まるよう制限
+                twoWeekPrediction = Math.max(lastWeight - 10, Math.min(lastWeight + 10, twoWeekPrediction));
+                
+                document.getElementById('twoWeekPrediction').textContent = twoWeekPrediction.toFixed(1);
+
+                // グラフデータ作成（canvasは既に上で取得済み）
+                const ctx = canvas.getContext('2d');
+
+                // 既存のグラフを破棄
+                if (window.predictionChartInstance) {
+                    window.predictionChartInstance.destroy();
+                }
+
+                // 過去7日間のデータ
+                const displayDays = Math.min(7, weightRecords.length);
+                const displayRecords = weightRecords.slice(-displayDays);
+            
+            const pastLabels = displayRecords.map((record) => {
+                const date = new Date(record.date);
+                return `${date.getMonth() + 1}/${date.getDate()}`;
+            });
+            const pastWeights = displayRecords.map(record => record.weight);
+
+            // 未来14日間の予測
+            const futureLabels = [];
+            const futureWeights = [];
+            const today = new Date();
+            for (let i = 1; i <= 14; i++) {
+                const futureDate = new Date(today);
+                futureDate.setDate(futureDate.getDate() + i);
+                futureLabels.push(`${futureDate.getMonth() + 1}/${futureDate.getDate()}`);
+                futureWeights.push(lastWeight + (predictedDailyChange * i));
+            }
+
+            // データセットを構築
+            const datasets = [
+                {
+                    label: '実績',
+                    data: [...pastWeights, ...new Array(futureLabels.length).fill(null)],
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.3,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: '予測',
+                    data: [...new Array(pastLabels.length - 1).fill(null), lastWeight, ...futureWeights],
+                    borderColor: '#2ECC71',
+                    backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                    borderDash: [5, 5],
+                    tension: 0.3,
+                    pointRadius: 3,
+                    pointHoverRadius: 5
+                }
+            ];
+
+            // 目標体重が設定されている場合のみ目標線を追加
+            if (goalWeight) {
+                const goalLine = new Array(pastLabels.length + futureLabels.length).fill(goalWeight);
+                datasets.push({
+                    label: '目標',
+                    data: goalLine,
+                    borderColor: '#E74C3C',
+                    borderDash: [10, 5],
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    fill: false
+                });
+            }
+
+            window.predictionChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [...pastLabels, ...futureLabels],
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(1) + 'kg';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            } catch (error) {
+                console.error('予測グラフエラー:', error);
+            }
+        }
+
+        // メニューテンプレート管理
+        function showTemplateManager() {
+            const templates = JSON.parse(localStorage.getItem(STORAGE_KEYS.MEAL_TEMPLATES)) || [];
+            
+            const overlay = document.createElement('div');
+            overlay.id = 'templateManagerOverlay';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 2000;
+                animation: fadeIn 0.3s ease-out;
+                overflow-y: auto;
+                padding: 20px;
+            `;
+
+            let templatesHTML = templates.map((template, index) => `
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                        <div style="flex: 1;">
+                            <strong style="font-size: 16px; color: #333;">${template.name}</strong>
+                            <p style="font-size: 13px; color: #666; margin: 5px 0;">
+                                ${template.baseCalories}kcal (${template.baseGrams}g) | 
+                                P:${template.protein}g F:${template.fat}g C:${template.carbs}g
+                            </p>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button onclick="editTemplate(${index})" style="padding: 8px 12px; background: #667eea; color: white; border: none; border-radius: 6px; font-size: 13px;">編集</button>
+                            <button onclick="deleteTemplate(${index})" style="padding: 8px 12px; background: #E74C3C; color: white; border: none; border-radius: 6px; font-size: 13px;">削除</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            overlay.innerHTML = `
+                <div style="
+                    background: white;
+                    padding: 25px;
+                    border-radius: 20px;
+                    max-width: 500px;
+                    width: 100%;
+                    max-height: 80vh;
+                    overflow-y: auto;
+                ">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="margin: 0; color: #333;">メニューテンプレート</h2>
+                        <button onclick="closeTemplateManager()" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #999;">×</button>
+                    </div>
+                    
+                    <button onclick="showAddTemplateForm()" class="btn" style="margin-bottom: 20px; background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%);">
+                        ➕ 新規テンプレート追加
+                    </button>
+
+                    <div id="templatesList">
+                        ${templatesHTML || '<p style="text-align: center; color: #999; padding: 30px 0;">テンプレートがまだありません</p>'}
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(overlay);
+        }
+
+        function closeTemplateManager() {
+            const overlay = document.getElementById('templateManagerOverlay');
+            if (overlay) {
+                overlay.remove();
+            }
+            loadQuickTemplates();
+        }
+
+        function showAddTemplateForm() {
+            const overlay = document.getElementById('templateManagerOverlay');
+            const formHTML = `
+                <div style="background: white; padding: 25px; border-radius: 20px; max-width: 500px; width: 100%;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="margin: 0; color: #333;">新規テンプレート</h2>
+                        <button onclick="showTemplateManager()" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #999;">×</button>
+                    </div>
+                    
+                    <form id="templateForm" onsubmit="saveTemplate(event)">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">メニュー名</label>
+                            <input type="text" id="templateName" required placeholder="例: 白米" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">基準グラム数</label>
+                            <input type="number" id="templateGrams" required min="1" step="0.1" placeholder="100" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">カロリー (基準グラム数あたり)</label>
+                            <input type="number" id="templateCalories" required min="0" step="0.1" placeholder="168" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #333;">PFCバランス (基準グラム数あたり)</label>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                                <div>
+                                    <label style="font-size: 12px; color: #666; display: block; margin-bottom: 5px;">タンパク質(g)</label>
+                                    <input type="number" id="templateProtein" min="0" step="0.1" placeholder="2.5" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 12px; color: #666; display: block; margin-bottom: 5px;">脂質(g)</label>
+                                    <input type="number" id="templateFat" min="0" step="0.1" placeholder="0.3" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 12px; color: #666; display: block; margin-bottom: 5px;">炭水化物(g)</label>
+                                    <input type="number" id="templateCarbs" min="0" step="0.1" placeholder="37.1" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn" style="margin-top: 10px;">保存</button>
+                    </form>
+                </div>
+            `;
+            
+            overlay.innerHTML = formHTML;
+        }
+
+        function saveTemplate(event) {
+            event.preventDefault();
+            
+            const template = {
+                name: document.getElementById('templateName').value,
+                baseGrams: parseFloat(document.getElementById('templateGrams').value),
+                baseCalories: parseFloat(document.getElementById('templateCalories').value),
+                protein: parseFloat(document.getElementById('templateProtein').value) || 0,
+                fat: parseFloat(document.getElementById('templateFat').value) || 0,
+                carbs: parseFloat(document.getElementById('templateCarbs').value) || 0
+            };
+            
+            const templates = JSON.parse(localStorage.getItem(STORAGE_KEYS.MEAL_TEMPLATES)) || [];
+            templates.push(template);
+            localStorage.setItem(STORAGE_KEYS.MEAL_TEMPLATES, JSON.stringify(templates));
+            
+            showTemplateManager();
+        }
+
+        function editTemplate(index) {
+            const templates = JSON.parse(localStorage.getItem(STORAGE_KEYS.MEAL_TEMPLATES)) || [];
+            const template = templates[index];
+            
+            const overlay = document.getElementById('templateManagerOverlay');
+            const formHTML = `
+                <div style="background: white; padding: 25px; border-radius: 20px; max-width: 500px; width: 100%;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="margin: 0; color: #333;">テンプレート編集</h2>
+                        <button onclick="showTemplateManager()" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #999;">×</button>
+                    </div>
+                    
+                    <form onsubmit="updateTemplate(event, ${index})">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">メニュー名</label>
+                            <input type="text" id="templateName" required value="${template.name}" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">基準グラム数</label>
+                            <input type="number" id="templateGrams" required value="${template.baseGrams}" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">カロリー (基準グラム数あたり)</label>
+                            <input type="number" id="templateCalories" required value="${template.baseCalories}" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #333;">PFCバランス (基準グラム数あたり)</label>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                                <div>
+                                    <label style="font-size: 12px; color: #666; display: block; margin-bottom: 5px;">タンパク質(g)</label>
+                                    <input type="number" id="templateProtein" value="${template.protein}" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 12px; color: #666; display: block; margin-bottom: 5px;">脂質(g)</label>
+                                    <input type="number" id="templateFat" value="${template.fat}" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 12px; color: #666; display: block; margin-bottom: 5px;">炭水化物(g)</label>
+                                    <input type="number" id="templateCarbs" value="${template.carbs}" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn">更新</button>
+                    </form>
+                </div>
+            `;
+            
+            overlay.innerHTML = formHTML;
+        }
+
+        function updateTemplate(event, index) {
+            event.preventDefault();
+            
+            const template = {
+                name: document.getElementById('templateName').value,
+                baseGrams: parseFloat(document.getElementById('templateGrams').value),
+                baseCalories: parseFloat(document.getElementById('templateCalories').value),
+                protein: parseFloat(document.getElementById('templateProtein').value) || 0,
+                fat: parseFloat(document.getElementById('templateFat').value) || 0,
+                carbs: parseFloat(document.getElementById('templateCarbs').value) || 0
+            };
+            
+            const templates = JSON.parse(localStorage.getItem(STORAGE_KEYS.MEAL_TEMPLATES)) || [];
+            templates[index] = template;
+            localStorage.setItem(STORAGE_KEYS.MEAL_TEMPLATES, JSON.stringify(templates));
+            
+            showTemplateManager();
+        }
+
+        function deleteTemplate(index) {
+            if (!confirm('このテンプレートを削除しますか？')) return;
+            
+            const templates = JSON.parse(localStorage.getItem(STORAGE_KEYS.MEAL_TEMPLATES)) || [];
+            templates.splice(index, 1);
+            localStorage.setItem(STORAGE_KEYS.MEAL_TEMPLATES, JSON.stringify(templates));
+            
+            showTemplateManager();
+        }
+
+        function useTemplate(index) {
+            const templates = JSON.parse(localStorage.getItem(STORAGE_KEYS.MEAL_TEMPLATES)) || [];
+            const template = templates[index];
+            
+            const overlay = document.createElement('div');
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 2000;
+                padding: 20px;
+            `;
+
+            overlay.innerHTML = `
+                <div style="background: white; padding: 25px; border-radius: 20px; max-width: 400px; width: 100%;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="margin: 0; color: #333;">${template.name}</h2>
+                        <button id="closeTemplateOverlay" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #999;">×</button>
+                    </div>
+                    
+                    <form id="templateForm">
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">グラム数を入力</label>
+                            <input type="number" id="useTemplateGrams" required min="1" step="0.1" placeholder="${template.baseGrams}" style="width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 18px; text-align: center;">
+                            <p style="font-size: 13px; color: #999; margin-top: 8px; text-align: center;">
+                                基準: ${template.baseGrams}g = ${template.baseCalories}kcal
+                            </p>
+                        </div>
+                        
+                        <div id="calculatedValues" style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                            <p style="font-size: 14px; color: #666; margin: 0;">グラム数を入力すると自動計算されます</p>
+                        </div>
+                        
+                        <button type="submit" class="btn">記録する</button>
+                    </form>
+                </div>
+            `;
+
+            document.body.appendChild(overlay);
+            
+            // 閉じるボタンのイベント
+            document.getElementById('closeTemplateOverlay').addEventListener('click', () => {
+                overlay.remove();
+            });
+            
+            // グラム数入力のイベント
+            const gramsInput = document.getElementById('useTemplateGrams');
+            gramsInput.addEventListener('input', function() {
+                const grams = parseFloat(this.value) || 0;
+                const ratio = grams / template.baseGrams;
+                
+                const calories = Math.round(template.baseCalories * ratio);
+                const protein = Math.round(template.protein * ratio * 10) / 10;
+                const fat = Math.round(template.fat * ratio * 10) / 10;
+                const carbs = Math.round(template.carbs * ratio * 10) / 10;
+                
+                document.getElementById('calculatedValues').innerHTML = `
+                    <p style="font-size: 16px; font-weight: 600; color: #333; margin: 0 0 10px 0;">
+                        ${calories} kcal
+                    </p>
+                    <p style="font-size: 13px; color: #666; margin: 0;">
+                        P: ${protein}g | F: ${fat}g | C: ${carbs}g
+                    </p>
+                `;
+            });
+            
+            // フォーム送信のイベント
+            document.getElementById('templateForm').addEventListener('submit', (event) => {
+                event.preventDefault();
+                
+                try {
+                    const grams = parseFloat(document.getElementById('useTemplateGrams').value);
+                    const ratio = grams / template.baseGrams;
+                    
+                    const record = {
+                        date: new Date().toISOString(),
+                        meal: `${template.name} (${grams}g)`,
+                        calories: Math.round(template.baseCalories * ratio),
+                        protein: Math.round(template.protein * ratio * 10) / 10,
+                        fat: Math.round(template.fat * ratio * 10) / 10,
+                        carbs: Math.round(template.carbs * ratio * 10) / 10
+                    };
+                    
+                    const calorieRecords = JSON.parse(localStorage.getItem(STORAGE_KEYS.CALORIE_RECORDS)) || [];
+                    calorieRecords.push(record);
+                    localStorage.setItem(STORAGE_KEYS.CALORIE_RECORDS, JSON.stringify(calorieRecords));
+                    
+                    displayCalorieRecords();
+                    updatePetWithMeal();
+                    
+                    overlay.remove();
+                    alert(`✅ ${template.name} を記録しました！`);
+                } catch (error) {
+                    console.error('記録エラー:', error);
+                    alert('記録中にエラーが発生しました: ' + error.message);
+                }
+            });
+        }
+
+        function loadQuickTemplates() {
+            const templates = JSON.parse(localStorage.getItem(STORAGE_KEYS.MEAL_TEMPLATES)) || [];
+            const container = document.getElementById('quickTemplates');
+            
+            if (templates.length === 0) {
+                container.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #999; font-size: 14px; padding: 20px 0;">テンプレート管理から追加してください</p>';
+                return;
+            }
+            
+            container.innerHTML = templates.slice(0, 6).map((template, index) => `
+                <button onclick="useTemplate(${index})" style="
+                    padding: 15px 10px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 10px;
+                    font-size: 14px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+                " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    ${template.name}<br>
+                    <span style="font-size: 11px; opacity: 0.9;">${template.baseCalories}kcal/${template.baseGrams}g</span>
+                </button>
+            `).join('');
+        }
+
+        // インラインonclick/onchangeから呼ばれる関数をグローバルに登録
+        window.changeTheme = changeTheme;
+        window.switchTab = switchTab;
+        window.petInteraction = petInteraction;
+        window.toggleFeature = toggleFeature;
+        window.toggleGraph = toggleGraph;
+        window.useTemplate = useTemplate;
+        window.deleteCalorieRecord = deleteCalorieRecord;
+        window.saveGoalWeight = saveGoalWeight;
+
+        // DOMの読み込み完了を待ってからアプリを起動
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('DOM読み込み完了、アプリ起動');
+                initApp();
+            });
+        } else {
+            // 既に読み込み済みの場合
+            console.log('DOM既に読み込み済み、アプリ起動');
+            initApp();
+        }
+        
+        })(); // IIFE終了
+    </script>
+</body>
+</html>
